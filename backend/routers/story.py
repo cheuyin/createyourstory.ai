@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Cookie, Response, BackgroundTasks
 from sqlmodel import Session, select
@@ -39,6 +38,13 @@ def create_story(
     db.add(job)
     db.commit()
 
+    background_tasks.add_task(
+        generate_story_task,
+        job_id,
+        request.theme,
+        session_id
+    )
+
     return job
 
 
@@ -74,4 +80,4 @@ def get_complete_story(story_id: int, db: Session = Depends(get_db)):
 
 
 def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
-    pass
+    return None
