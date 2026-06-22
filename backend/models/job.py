@@ -16,7 +16,7 @@ class StoryJob(SQLModel, table=True):
 
 
 class StoryJobPublic(SQLModel):
-    job_id: int
+    job_id: str
     status: str
     created_at: datetime
     story_id: int | None
