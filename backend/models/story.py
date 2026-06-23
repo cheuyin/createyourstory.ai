@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Column, Field, String, ForeignKey, Boolean, Relationship, JSON
+from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 
 
@@ -10,24 +10,24 @@ class Story(SQLModel, table=True):
 
 
 class StoryNode(SQLModel, table=True):
-    id: int | None = Field(primary_key=True, index=True)
+    id: int | None = Field(default=None, primary_key=True, index=True)
     story_id: int = Field(foreign_key="story.id", index=True)
     content: str
     is_root: bool = False
     is_ending: bool = False
     is_winning_ending: bool = False
-    options: dict | None = Field(sa_column=Column(JSON))
+    options_raw_json_str: str | None = None
     story: Story = Relationship(back_populates="nodes")
 
 
-class StoryOptions(SQLModel):
+class StoryOption(SQLModel):
     text: str
-    node_id: int | None = None
+    node_id: int
 
 
 class CompleteStoryNodePublic(SQLModel):
     id: int
-    options: list[StoryOptions]
+    options: list[StoryOption]
     content: str
     is_ending: bool = False
     is_winning_ending: bool = False

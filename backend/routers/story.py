@@ -1,3 +1,4 @@
+from typing import Annotated
 import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Cookie, Response, BackgroundTasks
@@ -6,17 +7,29 @@ from sqlmodel import Session, select
 from models.story import Story, StoryNode, StoryCreate, CompleteStoryPublic
 from models.job import StoryJob, StoryJobPublic
 from db.database import get_db
+from core.story_generator import StoryGenerator
 
 router = APIRouter(
     prefix="/stories",
     tags=["stories"]
 )
 
+SessionDep = Annotated[Session, Depends(get_db)]
+
 
 def get_session_id(session_id: str | None = Cookie(None)):
     if session_id is None:
         session_id = str(uuid.uuid4())
-    return session_id
+    return str(session_id)
+
+
+@router.get("/test/{theme}", status_code=200)
+def test_story(theme: str, db: SessionDep):
+    session_id = get_session_id()
+    StoryGenerator.generate_story(db, session_id, theme=theme)
+    return {
+        "status": "finished"
+    }
 
 
 @router.post("/create", response_model=StoryJobPublic)
@@ -24,8 +37,8 @@ def create_story(
     request: StoryCreate,
     background_tasks: BackgroundTasks,
     response: Response,
+    db: SessionDep,
     session_id: str = Depends(get_session_id),
-    db: Session = Depends(get_db)
 ):
     response.set_cookie(key="session_id", value=session_id, httponly=True)
     job_id = str(uuid.uuid4())
@@ -48,7 +61,8 @@ def create_story(
     return job
 
 
-def generate_story_task(job_id: str, theme: str, session_id: str, db: Session = Depends(get_db)):
+def generate_story_task(job_id: str, theme: str, session_id: str):
+    db = next(get_db())
     statement = select(StoryJob).where(StoryJob.job_id == job_id)
     results = db.exec(statement)
     job = results.first()
@@ -57,8 +71,9 @@ def generate_story_task(job_id: str, theme: str, session_id: str, db: Session = 
     try:
         job.status = "processing"
         db.commit()
-        story = {}  # TODO: Generate story
-        job.story_id = 1  # TODO: update story ID
+        story = StoryGenerator.generate_story(
+            db, session_id, theme=theme)
+        job.story_id = story.id
         job.status = "completed"
         job.completed_at = datetime.now()
         db.commit()
@@ -70,7 +85,7 @@ def generate_story_task(job_id: str, theme: str, session_id: str, db: Session = 
 
 
 @router.get("/{story_id}/complete", response_model=CompleteStoryPublic)
-def get_complete_story(story_id: int, db: Session = Depends(get_db)):
+def get_complete_story(story_id: int, db: SessionDep):
     statement = select(Story).where(Story.id == story_id)
     story = db.exec(statement).first()
     if not story:
@@ -80,4 +95,4 @@ def get_complete_story(story_id: int, db: Session = Depends(get_db)):
 
 
 def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
-    return None
+    return None  # type: ignore
