@@ -7,6 +7,8 @@ class Story(SQLModel, table=True):
     title: str = Field(index=True)
     session_id: str = Field(index=True)
     nodes: list["StoryNode"] = Relationship(back_populates="story")
+    created_at: datetime = Field(
+        default_factory=datetime.now)
 
 
 class StoryNode(SQLModel, table=True):
@@ -27,10 +29,10 @@ class StoryOption(SQLModel):
 
 class CompleteStoryNodePublic(SQLModel):
     id: int
-    options: list[StoryOption]
     content: str
     is_ending: bool = False
     is_winning_ending: bool = False
+    options: list[StoryOption]
 
 
 class StoryCreate(SQLModel):

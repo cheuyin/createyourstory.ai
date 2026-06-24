@@ -3,8 +3,9 @@ import uuid
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Cookie, Response, BackgroundTasks
 from sqlmodel import Session, select
+import json
 
-from models.story import Story, StoryNode, StoryCreate, CompleteStoryPublic
+from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
 from models.job import StoryJob, StoryJobPublic
 from db.database import get_db
 from core.story_generator import StoryGenerator
@@ -95,4 +96,29 @@ def get_complete_story(story_id: int, db: SessionDep):
 
 
 def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
-    return None  # type: ignore
+    statement = select(StoryNode).where(StoryNode.story_id == story.id)
+    nodes = db.exec(statement).all()
+    node_map = {}
+    for node in nodes:
+        assert node.id
+        node_response = CompleteStoryNodePublic(
+            id=node.id,
+            content=node.content,
+            is_ending=node.is_ending,
+            is_winning_ending=node.is_winning_ending,
+            options=json.loads(
+                node.options_raw_json_str) if node.options_raw_json_str else [])
+        node_map[node.id] = node_response
+    root_node = next((node for node in nodes if node.is_root), None)
+    if not root_node:
+        raise HTTPException(
+            status_code=500, detail="Story root node not found")
+    assert story.id
+    return CompleteStoryPublic(
+        id=story.id,
+        title=story.title,
+        session_id=story.session_id,
+        root_node=node_map[root_node.id],
+        all_nodes=node_map,
+        created_at=story.created_at
+    )
