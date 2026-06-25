@@ -1,4 +1,5 @@
 from langchain.agents import create_agent
+from langchain_google_genai import ChatGoogleGenerativeAI
 from sqlmodel import Session
 from models.story import Story, StoryNode, StoryOption
 from core.models import StoryLLMResponse, StoryNodeLLM
@@ -11,30 +12,32 @@ load_dotenv()
 
 class StoryGenerator:
     @classmethod
-    def _get_agent(cls):
-        return create_agent(
-            model="google_genai:gemini-3.1-flash-lite",
-            response_format=StoryLLMResponse,
-        )
+    def _get_model(cls):
+        model = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            max_tokens=None,
+            timeout=None,
+            max_retries=2,
+        ).with_structured_output(schema=StoryLLMResponse.model_json_schema(), method="json_schema")
+        return model
 
     @classmethod
     def generate_story(cls, db: Session, session_id: str, theme: str = "fantasy"):
         try:
-            agent = cls._get_agent()
-            response = agent.invoke({
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": STORY_PROMPT
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Create a story with this theme: {theme}"
-                    }
-                ]
-            })
-            response = StoryLLMResponse.model_validate(
-                response["structured_response"])
+            model = cls._get_model()
+            response = model.invoke([
+                {
+                    "role": "system",
+                    "content": STORY_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": f"Create a story with this theme: {theme}"
+                }
+            ]
+            )
+            print("RESPONSE: ", response)
+            response = StoryLLMResponse.model_validate(response)
             story = Story(title=response.title, session_id=session_id)
             db.add(story)
             db.flush()

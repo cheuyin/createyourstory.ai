@@ -5,14 +5,32 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import ThemeInput from "./ThemeInput";
 import LoadingStatus from "./LoadingStatus";
 
-// Creates a request for a new story
-// After sending the request, polls until status of story job is resolved
-// If story is finished, navigate to story page
-
 export default function StoryGenerator() {
   const navigate = useNavigate();
   const [job, setJob] = useState<StoryJobPublic | null>(null);
   const [theme, setTheme] = useState<string>("");
+  const job_poll = useQuery({
+    queryKey: ["story_job", job ? job.job_id : null],
+    queryFn: async () => {
+      if (!job) {
+        throw new Error("ASSERTION FAILED: A job should exist but doesn't.");
+      }
+      const response = await fetch(
+        `http://localhost:8000/api/jobs/${job.job_id}`,
+      );
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+      const data = await response.json();
+      setJob(data);
+      return data;
+    },
+    refetchInterval: () => {
+      if (job && job.status === "completed") return false;
+      return 3000;
+    },
+    enabled: Boolean(job),
+  });
 
   const mutation = useMutation({
     mutationFn: (newStory: StoryJobCreate) => {
@@ -27,6 +45,7 @@ export default function StoryGenerator() {
     onSuccess: async (data) => {
       const job = await data.json();
       setJob(job);
+      job_poll.refetch();
     },
   });
 
@@ -37,19 +56,33 @@ export default function StoryGenerator() {
     });
   };
 
+  if (job && job.status === "completed") {
+    navigate("/story/" + job.story_id);
+  }
+
   return (
     <div className="story-generator">
-      {mutation.error && (
+      {mutation.isPending && <LoadingStatus theme={theme} />}
+
+      {job_poll.isLoading && <p>Please wait while your story finishes...</p>}
+
+      {mutation.isError && (
         <div className="error-message">
           <p>{mutation.error.message}</p>
           <button onClick={() => console.log("RESET")}>Try Again</button>
         </div>
       )}
-      {!mutation.error && !job && !mutation.isPending && (
+
+      {job_poll.isError && (
+        <div className="error-message">
+          <p>{job_poll.error.message}</p>
+          <button onClick={() => console.log("RESET")}>Try Again</button>
+        </div>
+      )}
+
+      {!mutation.error && !mutation.isPending && !job && (
         <ThemeInput onSubmit={generateStory} />
       )}
-      {mutation.isPending && <LoadingStatus theme={theme} />}
-      {job && <p>{job.job_id}</p>}
     </div>
   );
 }
