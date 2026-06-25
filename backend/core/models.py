@@ -13,7 +13,7 @@ class StoryNodeLLM(BaseModel):
     isWinningEnding: bool = Field(
         description="Whether this node is a winning ending node")
     options: list[StoryOptionLLM] | None = Field(
-        default=None, description="The options for this node")
+        default=None, description="The options for this node, or none if ending node")
 
 
 class StoryLLMResponse(BaseModel):
