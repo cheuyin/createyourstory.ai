@@ -8,9 +8,17 @@ function StoryLoader() {
   const navigate = useNavigate();
 
   const { isPending, error, data } = useQuery({
-    queryKey: ["story"],
-    queryFn: () =>
-      fetch(`http://localhost:8000/api/stories/${id}/complete`).then((res) => res.json()),
+    queryKey: ["story", id],
+    queryFn: async () => {
+      const response = await fetch(
+        `http://localhost:8000/api/stories/${id}/complete`,
+      );
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data;
+    },
   });
 
   const createNewStory = () => {

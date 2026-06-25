@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import type { StoryJobCreate, StoryJobPublic } from "../types";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -13,7 +13,7 @@ export default function StoryGenerator() {
     queryKey: ["story_job", job ? job.job_id : null],
     queryFn: async () => {
       if (!job) {
-        throw new Error("ASSERTION FAILED: A job should exist but doesn't.");
+        return null;
       }
       const response = await fetch(
         `http://localhost:8000/api/jobs/${job.job_id}`,
@@ -56,15 +56,19 @@ export default function StoryGenerator() {
     });
   };
 
-  if (job && job.status === "completed") {
-    navigate("/story/" + job.story_id);
-  }
+  useEffect(() => {
+    if (job && job.status === "completed") {
+      navigate("/story/" + job.story_id);
+    }
+  }, [job, navigate]);
 
   return (
     <div className="story-generator">
       {mutation.isPending && <LoadingStatus theme={theme} />}
 
-      {job_poll.isLoading && <p>Please wait while your story finishes...</p>}
+      {job?.status === "processing" && (
+        <p>Please wait while your story is being created...</p>
+      )}
 
       {mutation.isError && (
         <div className="error-message">

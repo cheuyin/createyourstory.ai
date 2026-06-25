@@ -14,7 +14,7 @@ class StoryGenerator:
     @classmethod
     def _get_model(cls):
         model = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             max_tokens=None,
             timeout=None,
             max_retries=2,
