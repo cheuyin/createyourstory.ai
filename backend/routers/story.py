@@ -44,8 +44,6 @@ def create_story(
     response.set_cookie(key="session_id", value=session_id, httponly=True)
     job_id = str(uuid.uuid4())
 
-    # TODO: add background tasks to generate a story
-
     job = StoryJob(job_id=job_id, session_id=session_id,
                    theme=request.theme, status="pending")
 

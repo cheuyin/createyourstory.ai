@@ -19,3 +19,16 @@ export interface CompleteStoryPublic {
   root_node: CompleteStoryNodePublic;
   all_nodes: Record<number, CompleteStoryNodePublic>;
 }
+
+export interface StoryJobPublic {
+  job_id: string;
+  status: string;
+  created_at: Date;
+  story_id: number | null;
+  completed_at: Date | null;
+  error: string | null;
+}
+
+export interface StoryJobCreate {
+  theme: string;
+}

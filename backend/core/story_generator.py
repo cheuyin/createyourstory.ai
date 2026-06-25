@@ -33,7 +33,6 @@ class StoryGenerator:
                     }
                 ]
             })
-            print("RESPONSE: ", response)
             response = StoryLLMResponse.model_validate(
                 response["structured_response"])
             story = Story(title=response.title, session_id=session_id)
