@@ -2,7 +2,7 @@ from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 from sqlmodel import Session
 from models.story import Story, StoryNode, StoryOption
-from core.models import StoryLLMResponse, StoryNodeLLM
+from core.models import StoryResponseLLM, StoryNodeLLM
 from core.prompts import STORY_PROMPT
 from dotenv import load_dotenv
 import json
@@ -14,11 +14,11 @@ class StoryGenerator:
     @classmethod
     def _get_model(cls):
         model = ChatGoogleGenerativeAI(
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash",
             max_tokens=None,
             timeout=None,
             max_retries=2,
-        ).with_structured_output(schema=StoryLLMResponse.model_json_schema(), method="json_schema")
+        ).with_structured_output(schema=StoryResponseLLM.model_json_schema(), method="json_schema")
         return model
 
     @classmethod
@@ -37,14 +37,14 @@ class StoryGenerator:
             ]
             )
             print("RESPONSE: ", response)
-            response = StoryLLMResponse.model_validate(response)
+            response = StoryResponseLLM.model_validate(response)
             story = Story(title=response.title, session_id=session_id)
             db.add(story)
             db.flush()
             assert story.id
 
             cls._process_story_node(
-                db, story.id, response.rootNode, is_root=True)
+                db, story.id, response, response.rootNodeId, is_root=True)
 
             db.commit()
             return story
@@ -52,26 +52,28 @@ class StoryGenerator:
             raise e
 
     @classmethod
-    def _process_story_node(cls, db: Session, story_id: int, node_data: StoryNodeLLM, is_root: bool = False) -> StoryNode:
+    def _process_story_node(cls, db: Session, story_id: int, story: StoryResponseLLM, curr_node_id: int, is_root: bool = False) -> StoryNode:
+        curr_node = story.allNodes[curr_node_id]
         node = StoryNode(
             story_id=story_id,
-            content=node_data.content,
+            content=curr_node.content,
             is_root=is_root,
-            is_ending=node_data.isEnding,
-            is_winning_ending=node_data.isWinningEnding,
+            is_ending=len(curr_node.options) == 0,
+            is_winning_ending=curr_node.isWinningEnding,
         )
         db.add(node)
         db.flush()
 
-        if not node.is_ending and hasattr(node_data, "options") and node_data.options:
+        if not node.is_ending:
             options_raw_json_str_list: list[dict] = []
-            for option_data in node_data.options:
-                next_node = StoryNodeLLM.model_validate(option_data.nextNode)
-                child_node = cls._process_story_node(
-                    db, story_id, next_node, False)
+            for option_id in curr_node.options:
+                next_node = StoryNodeLLM.model_validate(
+                    story.allNodes[option_id])
+                added_child = cls._process_story_node(
+                    db, story_id, story, next_node.id, False)
                 options_raw_json_str_list.append(StoryOption(**{
-                    "text": option_data.text,
-                    "node_id": child_node.id
+                    "text": story.allNodes[option_id].optionText,
+                    "node_id": added_child.id
                 }).model_dump(mode="json"))
             node.options_raw_json_str = json.dumps(options_raw_json_str_list)
 

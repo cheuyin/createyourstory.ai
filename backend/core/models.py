@@ -1,21 +1,19 @@
 from pydantic import BaseModel, Field
 
 
-class StoryOptionLLM(BaseModel):
-    text: str = Field(description="the text of the option shown to the user")
-    nextNode: "StoryNodeLLM" = Field(
-        description="the next node content and its options")
-
-
 class StoryNodeLLM(BaseModel):
+    id: int = Field(description="Id of this node")
+    optionText: str | None = Field(
+        default=None, description="Text of the option shown to the user that this node pertains to")
+    options: list[int] = Field(
+        description="Options for this node as a list of node ids")
     content: str = Field(description="The main content of the story node")
-    isEnding: bool = Field(description="Whether this node is an ending node")
     isWinningEnding: bool = Field(
-        description="Whether this node is a winning ending node")
-    options: list[StoryOptionLLM] | None = Field(
-        default=None, description="The options for this node, or none if ending node")
+        description="Whether this node is the winning choice. Should only be one per story.")
 
 
-class StoryLLMResponse(BaseModel):
-    title: str = Field(description="The title of the story")
-    rootNode: StoryNodeLLM = Field(description="The root node of the story")
+class StoryResponseLLM(BaseModel):
+    title: str = Field(description="Title of the story")
+    rootNodeId: int = Field(description="Id of the root node of the story")
+    allNodes: dict[int, StoryNodeLLM] = Field(
+        description="All the nodes in the story in a dictionary with their key as the id")

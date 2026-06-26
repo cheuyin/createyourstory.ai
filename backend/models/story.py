@@ -18,7 +18,7 @@ class StoryNode(SQLModel, table=True):
     is_root: bool = False
     is_ending: bool = False
     is_winning_ending: bool = False
-    options_raw_json_str: str | None = None
+    options_raw_json_str: str | None = None # Serialized JSON string of a list of StoryOptions
     story: Story = Relationship(back_populates="nodes")
 
 
