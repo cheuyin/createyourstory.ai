@@ -1,5 +1,5 @@
 [project]
-name = "CreateYourStory.ai - Backend"
+name = "CreateYourStory.ai-Backend"
 version = "0.1.0"
 description = "RESTful backend built with FastAPI and SQLModel."
 readme = "README.md"
