@@ -22,6 +22,14 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
+@app.get("/")
+def hello():
+    return {
+        "message": "Hello!"
+    }
+
+
 app.include_router(story.router, prefix=settings.API_PREFIX)
 app.include_router(job.router, prefix=settings.API_PREFIX)
 

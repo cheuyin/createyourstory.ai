@@ -24,15 +24,6 @@ def get_session_id(session_id: str | None = Cookie(None)):
     return str(session_id)
 
 
-@router.get("/test/{theme}", status_code=200)
-def test_story(theme: str, db: SessionDep):
-    session_id = get_session_id()
-    StoryGenerator.generate_story(db, session_id, theme=theme)
-    return {
-        "status": "finished"
-    }
-
-
 @router.post("/create", response_model=StoryJobPublic)
 def create_story(
     request: StoryCreate,
