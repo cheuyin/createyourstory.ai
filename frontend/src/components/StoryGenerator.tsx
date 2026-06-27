@@ -4,6 +4,7 @@ import type { StoryJobCreate, StoryJobPublic } from "../types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import ThemeInput from "./ThemeInput";
 import LoadingStatus from "./LoadingStatus";
+import { BASE_URL } from "../api";
 
 export default function StoryGenerator() {
   const navigate = useNavigate();
@@ -15,9 +16,7 @@ export default function StoryGenerator() {
       if (!job) {
         return null;
       }
-      const response = await fetch(
-        `http://localhost:8000/api/jobs/${job.job_id}`,
-      );
+      const response = await fetch(`${BASE_URL}/api/jobs/${job.job_id}`);
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
       }
@@ -34,7 +33,7 @@ export default function StoryGenerator() {
 
   const mutation = useMutation({
     mutationFn: (newStory: StoryJobCreate) => {
-      return fetch("http://localhost:8000/api/stories/create", {
+      return fetch(`${BASE_URL}/api/stories/create`, {
         method: "POST",
         body: JSON.stringify(newStory),
         headers: {

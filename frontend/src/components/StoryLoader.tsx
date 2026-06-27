@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "react-router";
 import LoadingStatus from "./LoadingStatus";
 import { useQuery } from "@tanstack/react-query";
 import StoryGame from "./StoryGame";
+import { BASE_URL } from "../api";
 
 function StoryLoader() {
   const { id } = useParams();
@@ -11,7 +12,7 @@ function StoryLoader() {
     queryKey: ["story", id],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:8000/api/stories/${id}/complete`,
+        `${BASE_URL}/api/stories/${id}/complete`,
       );
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
