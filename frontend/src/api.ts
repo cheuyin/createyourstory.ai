@@ -1,1 +1,1 @@
-export const BASE_URL = "https://createyourstory-ai-backend.onrender.com";
+export const BASE_URL = import.meta.env.VITE_BASE_URL;
