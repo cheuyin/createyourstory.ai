@@ -32,3 +32,8 @@ export interface StoryJobPublic {
 export interface StoryJobCreate {
   theme: string;
 }
+
+export interface APIError {
+  error: string;
+  message: string;
+}

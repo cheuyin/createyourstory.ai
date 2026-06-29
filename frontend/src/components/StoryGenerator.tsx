@@ -9,6 +9,7 @@ import { BASE_URL } from "../api";
 export default function StoryGenerator() {
   const navigate = useNavigate();
   const [job, setJob] = useState<StoryJobPublic | null>(null);
+  const isJobFetchingCompleted = job && job.status === "completed";
   const [theme, setTheme] = useState<string>("");
   const job_poll = useQuery({
     queryKey: ["story_job", job ? job.job_id : null],
@@ -17,32 +18,38 @@ export default function StoryGenerator() {
         return null;
       }
       const response = await fetch(`${BASE_URL}/api/jobs/${job.job_id}`);
-      if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
-      }
       const data = await response.json();
+      if (!response.ok) {
+        throw Error(`${data.error}: ${data.message}`);
+      }
       setJob(data);
       return data;
     },
-    refetchInterval: () => {
-      if (job && job.status === "completed") return false;
+    refetchInterval: (query) => {
+      if (isJobFetchingCompleted) return false;
+      if (query.state.error) return false;
       return 3000;
     },
     enabled: Boolean(job),
   });
 
   const mutation = useMutation({
-    mutationFn: (newStory: StoryJobCreate) => {
-      return fetch(`${BASE_URL}/api/stories/create`, {
+    mutationFn: async (newStory: StoryJobCreate) => {
+      const response = await fetch(`${BASE_URL}/api/stories/create`, {
         method: "POST",
         body: JSON.stringify(newStory),
         headers: {
           "Content-Type": "application/json",
         },
       });
+      const data = await response.json();
+      if (!response.ok) {
+        throw Error(`(${data.error}): ${data.message}`);
+      }
+      return data;
     },
     onSuccess: async (data) => {
-      const job = await data.json();
+      const job = await data;
       setJob(job);
       job_poll.refetch();
     },
@@ -55,37 +62,41 @@ export default function StoryGenerator() {
     });
   };
 
+  const handleTryAgain = () => {
+    navigate(0);
+  };
+
   useEffect(() => {
-    if (job && job.status === "completed") {
+    if (isJobFetchingCompleted) {
       navigate("/story/" + job.story_id);
     }
-  }, [job, navigate]);
+  }, [isJobFetchingCompleted, job, navigate]);
 
-  return (
-    <div className="story-generator">
-      {mutation.isPending && <LoadingStatus theme={theme} />}
+  if (mutation.isPending) {
+    return <LoadingStatus theme={theme} />;
+  }
 
-      {job?.status === "processing" && (
-        <p>Please wait while your story is being created...</p>
-      )}
+  if (mutation.isError) {
+    return (
+      <div className="error-message">
+        <p>{mutation.error.message}</p>
+        <button onClick={handleTryAgain}>Try Again</button>
+      </div>
+    );
+  }
 
-      {mutation.isError && (
-        <div className="error-message">
-          <p>{mutation.error.message}</p>
-          <button onClick={() => console.log("RESET")}>Try Again</button>
-        </div>
-      )}
+  if (job && !isJobFetchingCompleted && !job_poll.isError) {
+    return <p>Please wait while your story is being created...</p>;
+  }
 
-      {job_poll.isError && (
-        <div className="error-message">
-          <p>{job_poll.error.message}</p>
-          <button onClick={() => console.log("RESET")}>Try Again</button>
-        </div>
-      )}
+  if (job_poll.isError) {
+    return (
+      <div className="error-message">
+        <p>{job_poll.error.message}</p>
+        <button onClick={handleTryAgain}>Try Again</button>
+      </div>
+    );
+  }
 
-      {!mutation.error && !mutation.isPending && !job && (
-        <ThemeInput onSubmit={generateStory} />
-      )}
-    </div>
-  );
+  return <ThemeInput onSubmit={generateStory} />;
 }

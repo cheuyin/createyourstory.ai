@@ -1,6 +1,7 @@
-from langchain.agents import create_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
+from pydantic import ValidationError
 from sqlmodel import Session
+from exceptions.exceptions import StoryResponseValidationError
 from models.story import Story, StoryNode, StoryOption
 from core.models import StoryResponseLLM, StoryNodeLLM
 from core.prompts import STORY_PROMPT
@@ -14,7 +15,7 @@ class StoryGenerator:
     @classmethod
     def _get_model(cls):
         model = ChatGoogleGenerativeAI(
-            model="gemini-3.5-flash",
+            model="gemini-3.1-flash-lite",
             max_tokens=None,
             timeout=None,
             max_retries=2,
@@ -48,8 +49,8 @@ class StoryGenerator:
 
             db.commit()
             return story
-        except Exception as e:
-            raise e
+        except ValidationError:
+            raise StoryResponseValidationError()
 
     @classmethod
     def _process_story_node(cls, db: Session, story_id: int, story: StoryResponseLLM, curr_node_id: int, is_root: bool = False) -> StoryNode:

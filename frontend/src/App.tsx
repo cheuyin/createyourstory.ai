@@ -12,7 +12,14 @@ function App() {
         </header>
         <main>
           <Routes>
-            <Route path={"/"} element={<StoryGenerator />} />
+            <Route
+              path={"/"}
+              element={
+                <div className="story-generator">
+                  <StoryGenerator />
+                </div>
+              }
+            />
             <Route path={"/story/:id"} element={<StoryLoader />} />
           </Routes>
         </main>

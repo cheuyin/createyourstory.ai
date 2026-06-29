@@ -1,10 +1,11 @@
 from typing import Annotated
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Cookie, Response, BackgroundTasks
+from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks
 from sqlmodel import Session, select
 import json
 
+from exceptions.exceptions import CreateYourStoryError, JobNotFoundError, StoryNotFoundError, StoryResponseValidationError, StoryRootNotFoundError
 from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
 from models.job import StoryJob, StoryJobPublic
 from db.database import get_db
@@ -57,7 +58,7 @@ def generate_story_task(job_id: str, theme: str, session_id: str):
     results = db.exec(statement)
     job = results.first()
     if not job:
-        return
+        raise JobNotFoundError()
     try:
         job.status = "processing"
         db.commit()
@@ -67,7 +68,7 @@ def generate_story_task(job_id: str, theme: str, session_id: str):
         job.status = "completed"
         job.completed_at = datetime.now()
         db.commit()
-    except Exception as e:
+    except CreateYourStoryError as e:
         job.status = "failed"
         job.completed_at = datetime.now()
         job.error = str(e)
@@ -79,7 +80,7 @@ def get_complete_story(story_id: int, db: SessionDep):
     statement = select(Story).where(Story.id == story_id)
     story = db.exec(statement).first()
     if not story:
-        raise HTTPException(status_code=404, detail="Story not found")
+        raise StoryNotFoundError()
     complete_story = build_complete_story_tree(db, story=story)
     return complete_story
 
@@ -100,8 +101,7 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
         node_map[node.id] = node_response
     root_node = next((node for node in nodes if node.is_root), None)
     if not root_node:
-        raise HTTPException(
-            status_code=500, detail="Story root node not found")
+        raise StoryRootNotFoundError()
     assert story.id
     return CompleteStoryPublic(
         id=story.id,
