@@ -85,6 +85,18 @@ def get_complete_story(story_id: int, db: SessionDep):
     return complete_story
 
 
+@router.get("/", response_model=list[CompleteStoryPublic])
+def get_all_stories(db: SessionDep):
+    query = select(Story)
+    stories = db.exec(statement=query).all()
+
+    def func(story: Story):
+        return build_complete_story_tree(db, story)
+
+    stories = map(func, stories)
+    return stories
+
+
 def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
     statement = select(StoryNode).where(StoryNode.story_id == story.id)
     nodes = db.exec(statement).all()

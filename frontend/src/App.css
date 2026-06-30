@@ -11,19 +11,6 @@
   --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: var(--text-color);
-  background-color: var(--background-color);
-}
-
 .app-container {
   max-width: 800px;
   margin: 0 auto;

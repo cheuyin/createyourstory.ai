@@ -2,6 +2,7 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import StoryLoader from "./components/StoryLoader";
 import StoryGenerator from "./components/StoryGenerator";
+import StoryList from "./components/StoryList";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
               element={
                 <div className="story-generator">
                   <StoryGenerator />
+                  <StoryList />
                 </div>
               }
             />
