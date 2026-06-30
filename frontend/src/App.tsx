@@ -8,7 +8,7 @@ function App() {
     <Router>
       <div className="app-container">
         <header>
-          <h1>Interactive Story Generator</h1>
+          <h1>CreateYourStory.ai</h1>
         </header>
         <main>
           <Routes>
