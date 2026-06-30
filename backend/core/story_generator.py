@@ -13,9 +13,9 @@ load_dotenv()
 
 class StoryGenerator:
     @classmethod
-    def _get_model(cls):
+    def _get_model(cls, ai_model: str):
         model = ChatGoogleGenerativeAI(
-            model="gemini-3.1-flash-lite",
+            model=ai_model,
             max_tokens=None,
             timeout=None,
             max_retries=2,
@@ -23,9 +23,9 @@ class StoryGenerator:
         return model
 
     @classmethod
-    def generate_story(cls, db: Session, session_id: str, theme: str = "fantasy"):
+    def generate_story(cls, db: Session, session_id: str,  ai_model: str, theme: str = "fantasy"):
         try:
-            model = cls._get_model()
+            model = cls._get_model(ai_model)
             response = model.invoke([
                 {
                     "role": "system",
@@ -39,7 +39,8 @@ class StoryGenerator:
             )
             print("RESPONSE: ", response)
             response = StoryResponseLLM.model_validate(response)
-            story = Story(title=response.title, session_id=session_id)
+            story = Story(title=response.title,
+                          session_id=session_id, ai_model=ai_model)
             db.add(story)
             db.flush()
             assert story.id

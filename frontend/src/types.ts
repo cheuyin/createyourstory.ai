@@ -15,6 +15,7 @@ export interface CompleteStoryPublic {
   id: number;
   title: string;
   session_id: string | null;
+  ai_model: string;
   created_at: Date;
   root_node: CompleteStoryNodePublic;
   all_nodes: Record<number, CompleteStoryNodePublic>;
@@ -31,6 +32,7 @@ export interface StoryJobPublic {
 
 export interface StoryJobCreate {
   theme: string;
+  ai_model: string;
 }
 
 export interface APIError {

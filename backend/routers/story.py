@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks
 from sqlmodel import Session, select
 import json
 
-from exceptions.exceptions import CreateYourStoryError, JobNotFoundError, StoryNotFoundError, StoryResponseValidationError, StoryRootNotFoundError
+from exceptions.exceptions import *
 from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
 from models.job import StoryJob, StoryJobPublic
 from db.database import get_db
@@ -17,6 +17,12 @@ router = APIRouter(
 )
 
 SessionDep = Annotated[Session, Depends(get_db)]
+
+VALID_AI_MODELS = [
+    "gemini-3.5-flash",
+    "gemini-3.1-pro-preview",
+    "gemini-3.1-flash-lite"
+]
 
 
 def get_session_id(session_id: str | None = Cookie(None)):
@@ -33,6 +39,9 @@ def create_story(
     db: SessionDep,
     session_id: str = Depends(get_session_id),
 ):
+    if request.ai_model not in VALID_AI_MODELS:
+        raise UnsupportedAIModelError()
+
     response.set_cookie(key="session_id", value=session_id, httponly=True)
     job_id = str(uuid.uuid4())
 
@@ -46,13 +55,14 @@ def create_story(
         generate_story_task,
         job_id,
         request.theme,
-        session_id
+        session_id,
+        request.ai_model
     )
 
     return job
 
 
-def generate_story_task(job_id: str, theme: str, session_id: str):
+def generate_story_task(job_id: str, theme: str, session_id: str, ai_model: str):
     db = next(get_db())
     statement = select(StoryJob).where(StoryJob.job_id == job_id)
     results = db.exec(statement)
@@ -63,7 +73,7 @@ def generate_story_task(job_id: str, theme: str, session_id: str):
         job.status = "processing"
         db.commit()
         story = StoryGenerator.generate_story(
-            db, session_id, theme=theme)
+            db, session_id,  ai_model, theme=theme,)
         job.story_id = story.id
         job.status = "completed"
         job.completed_at = datetime.now()
@@ -120,6 +130,7 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
         title=story.title,
         session_id=story.session_id,
         root_node=node_map[root_node.id],
+        ai_model=story.ai_model,
         all_nodes=node_map,
         created_at=story.created_at
     )

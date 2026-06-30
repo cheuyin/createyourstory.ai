@@ -6,6 +6,7 @@ class Story(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     title: str = Field(index=True)
     session_id: str = Field(index=True)
+    ai_model: str
     nodes: list["StoryNode"] = Relationship(back_populates="story")
     created_at: datetime = Field(
         default_factory=datetime.now)
@@ -18,7 +19,8 @@ class StoryNode(SQLModel, table=True):
     is_root: bool = False
     is_ending: bool = False
     is_winning_ending: bool = False
-    options_raw_json_str: str | None = None # Serialized JSON string of a list of StoryOptions
+    # Serialized JSON string of a list of StoryOptions
+    options_raw_json_str: str | None = None
     story: Story = Relationship(back_populates="nodes")
 
 
@@ -37,11 +39,13 @@ class CompleteStoryNodePublic(SQLModel):
 
 class StoryCreate(SQLModel):
     theme: str
+    ai_model: str
 
 
 class CompleteStoryPublic(SQLModel):
     id: int
     title: str
+    ai_model: str
     session_id: str | None
     created_at: datetime
     root_node: CompleteStoryNodePublic

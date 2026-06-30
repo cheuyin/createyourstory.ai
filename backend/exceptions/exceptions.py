@@ -7,6 +7,13 @@ class CreateYourStoryError(Exception):
         super().__init__(self.message, self.name)
 
 
+class UnsupportedAIModelError(CreateYourStoryError):
+    """selected AI model isn't supported"""
+
+    def __init__(self, message: str = "Please choose a different model", name: str = "Model not supported"):
+        super().__init__(message, name)
+
+
 class JobNotFoundError(CreateYourStoryError):
     """job not found"""
 

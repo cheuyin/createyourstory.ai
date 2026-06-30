@@ -11,7 +11,7 @@ export default function StoryList() {
       const data = await response.json();
       console.log(data);
       if (!response.ok) {
-        throw new Error(`(${data.error}): ${data.message}`);
+        throw new Error(`${data.error}: ${data.message}`);
       }
       return data;
     },

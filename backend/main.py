@@ -28,8 +28,16 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(UnsupportedAIModelError)
+def unsupported_ai_model_error_handler(_: Request, exc: UnsupportedAIModelError):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"error": exc.name,
+                 "message": exc.message})
+
+
 @app.exception_handler(StoryGenerationError)
-def story_generation_error_handler(_: Request, exc: StoryNotFoundError):
+def story_generation_error_handler(_: Request, exc: StoryGenerationError):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"error": exc.name,
@@ -37,7 +45,7 @@ def story_generation_error_handler(_: Request, exc: StoryNotFoundError):
 
 
 @app.exception_handler(StoryResponseValidationError)
-def story_response_validation_handler(_: Request, exc: StoryNotFoundError):
+def story_response_validation_handler(_: Request, exc: StoryResponseValidationError):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"error": exc.name,
@@ -45,7 +53,7 @@ def story_response_validation_handler(_: Request, exc: StoryNotFoundError):
 
 
 @app.exception_handler(StoryRootNotFoundError)
-def story_root_not_found_handler(_: Request, exc: StoryNotFoundError):
+def story_root_not_found_handler(_: Request, exc: StoryRootNotFoundError):
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"error": exc.name,

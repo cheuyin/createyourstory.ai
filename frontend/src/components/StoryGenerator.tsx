@@ -44,7 +44,7 @@ export default function StoryGenerator() {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw Error(`(${data.error}): ${data.message}`);
+        throw Error(`${data.error}: ${data.message}`);
       }
       return data;
     },
@@ -55,11 +55,9 @@ export default function StoryGenerator() {
     },
   });
 
-  const generateStory = (theme: string) => {
+  const generateStory = (story: StoryJobCreate) => {
     setTheme(theme);
-    mutation.mutate({
-      theme,
-    });
+    mutation.mutate(story);
   };
 
   const handleTryAgain = () => {
@@ -98,5 +96,14 @@ export default function StoryGenerator() {
     );
   }
 
-  return <ThemeInput onSubmit={generateStory} />;
+  return (
+    <ThemeInput
+      onSubmit={(theme: string) =>
+        generateStory({
+          theme,
+          ai_model: "gemini-3.1-pro-preview",
+        })
+      }
+    />
+  );
 }
