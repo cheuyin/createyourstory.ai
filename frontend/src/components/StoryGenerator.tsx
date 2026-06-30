@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import type { StoryJobCreate, StoryJobPublic } from "../types";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import ThemeInput from "./ThemeInput";
+import CreateStoryForm from "./CreateStoryForm";
 import LoadingStatus from "./LoadingStatus";
 import { BASE_URL } from "../api";
 
@@ -97,13 +97,8 @@ export default function StoryGenerator() {
   }
 
   return (
-    <ThemeInput
-      onSubmit={(theme: string) =>
-        generateStory({
-          theme,
-          ai_model: "gemini-3.1-pro-preview",
-        })
-      }
+    <CreateStoryForm
+      onSubmit={(values: StoryJobCreate) => generateStory(values)}
     />
   );
 }
