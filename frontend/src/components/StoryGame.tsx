@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CompleteStoryNodePublic, CompleteStoryPublic } from "../types";
+import { Badge } from "flowbite-react";
 
 interface StoryGameProps {
   story: CompleteStoryPublic;
@@ -28,6 +29,7 @@ function StoryGame({ story, onNewStory }: StoryGameProps) {
     <div className="story-game">
       <header className="story-header">
         <h2>{story.title}</h2>
+        <Badge className="w-fit rounded-lg">{story.ai_model}</Badge>
       </header>
 
       <div className="story-content">
