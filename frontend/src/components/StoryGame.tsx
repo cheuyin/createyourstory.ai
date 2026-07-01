@@ -30,6 +30,11 @@ function StoryGame({ story, onNewStory }: StoryGameProps) {
       <header className="story-header">
         <h2>{story.title}</h2>
         <Badge className="w-fit rounded-lg">{story.ai_model}</Badge>
+        <Badge className="w-fit rounded-lg" color="success">{story.num_words} words</Badge>
+        <Badge className="w-fit rounded-lg" color="indigo">{story.num_endings} endings</Badge>
+        <Badge className="w-fit rounded-lg" color="yellow">
+          {story.num_winning_endings} winning endings
+        </Badge>
       </header>
 
       <div className="story-content">
