@@ -75,10 +75,12 @@ def generate_story_task(job_id: str, theme: str, session_id: str, ai_model: str)
         story = StoryGenerator.generate_story(
             db, session_id,  ai_model, theme=theme,)
         job.story_id = story.id
+        generate_story_stats(story)
         job.status = "completed"
         job.completed_at = datetime.now()
         db.commit()
     except CreateYourStoryError as e:
+        story = None
         job.status = "failed"
         job.completed_at = datetime.now()
         job.error = str(e)
@@ -132,5 +134,29 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
         root_node=node_map[root_node.id],
         ai_model=story.ai_model,
         all_nodes=node_map,
+        num_endings=story.num_endings or -1,
+        num_winning_endings=story.num_winning_endings or -1,
+        num_words=story.num_words or -1,
         created_at=story.created_at
     )
+
+
+def generate_story_stats(story: Story):
+    # 1. Calculate and save total word count
+    total_words = 0
+    for node in story.nodes:
+        total_words += len(node.content.split())
+    story.num_words = total_words
+
+    num_endings = 0
+    num_winning_endings = 0
+
+    # 2. Calculate number of endings and winning endings
+    for node in story.nodes:
+        if node.is_ending:
+            num_endings += 1
+        if node.is_winning_ending:
+            num_winning_endings += 1
+
+    story.num_endings = num_endings
+    story.num_winning_endings = num_winning_endings

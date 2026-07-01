@@ -19,6 +19,9 @@ export interface CompleteStoryPublic {
   created_at: Date;
   root_node: CompleteStoryNodePublic;
   all_nodes: Record<number, CompleteStoryNodePublic>;
+  num_endings: number;
+  num_winning_endings: number;
+  num_words: number;
 }
 
 export interface StoryJobPublic {

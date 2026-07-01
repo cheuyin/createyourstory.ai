@@ -8,6 +8,10 @@ class Story(SQLModel, table=True):
     session_id: str = Field(index=True)
     ai_model: str
     nodes: list["StoryNode"] = Relationship(back_populates="story")
+    # ===== Stats =====
+    num_endings: int | None = Field(default=None)
+    num_winning_endings: int | None = Field(default=None)
+    num_words: int | None = Field(default=None)
     created_at: datetime = Field(
         default_factory=datetime.now)
 
@@ -50,3 +54,6 @@ class CompleteStoryPublic(SQLModel):
     created_at: datetime
     root_node: CompleteStoryNodePublic
     all_nodes: dict[int, CompleteStoryNodePublic]
+    num_endings: int
+    num_winning_endings: int
+    num_words: int
