@@ -37,10 +37,9 @@ class StoryGenerator:
                 }
             ]
             )
-            print("RESPONSE: ", response)
             response = StoryResponseLLM.model_validate(response)
             story = Story(title=response.title,
-                          session_id=session_id, ai_model=ai_model)
+                          session_id=session_id, ai_model=ai_model, image_base_64=None)
             db.add(story)
             db.flush()
             assert story.id
