@@ -1,7 +1,7 @@
 from typing import Annotated
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks
+from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks, status
 from sqlmodel import Session, select
 import json
 
@@ -60,6 +60,18 @@ def create_story(
     )
 
     return job
+
+
+@router.delete("/{story_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_story(story_id: int, db: SessionDep):
+    statement = select(Story).where(Story.id == story_id)
+    results = db.exec(statement)
+    if not results:
+        raise StoryNotFoundError()
+    story = results.one()
+    db.delete(story)
+    db.commit()
+    return
 
 
 def generate_story_task(job_id: str, theme: str, session_id: str, ai_model: str):
