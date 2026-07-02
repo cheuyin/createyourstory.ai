@@ -70,6 +70,7 @@ export default function StoryList() {
           <TableRow>
             <TableHeadCell>ID</TableHeadCell>
             <TableHeadCell>Title</TableHeadCell>
+            <TableHeadCell>Word Count</TableHeadCell>
             <TableHeadCell>Model</TableHeadCell>
             <TableHeadCell>Date Created</TableHeadCell>
             <TableHeadCell>
@@ -88,6 +89,7 @@ export default function StoryList() {
                 {story.id}
               </TableCell>
               <TableCell>{story.title}</TableCell>
+              <TableCell>{story.num_words} words</TableCell>
               <TableCell>{story.ai_model}</TableCell>
               <TableCell>
                 {new Date(story.created_at).toLocaleString()}
