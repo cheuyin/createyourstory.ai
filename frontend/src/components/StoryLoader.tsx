@@ -11,9 +11,7 @@ function StoryLoader() {
   const { isPending, error, data } = useQuery({
     queryKey: ["story", id],
     queryFn: async () => {
-      const response = await fetch(
-        `${BASE_URL}/api/stories/${id}/complete`,
-      );
+      const response = await fetch(`${BASE_URL}/api/stories/${id}/complete`);
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
       }
@@ -46,6 +44,7 @@ function StoryLoader() {
     return (
       <div className="story-loader">
         <StoryGame story={data} onNewStory={createNewStory} />
+        <img src={`data:image/jpeg;base64,${data.image_base_64}`} />
       </div>
     );
   }

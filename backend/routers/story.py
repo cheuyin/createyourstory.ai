@@ -4,6 +4,8 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks, status
 from sqlmodel import Session, select
 import json
+from pathlib import Path
+import base64
 
 from exceptions.exceptions import *
 from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
@@ -93,11 +95,19 @@ def generate_story_task(job_id: str, theme: str, session_id: str, ai_model: str)
         job.status = "completed"
         job.completed_at = datetime.now()
         db.commit()
+        generate_image_task(story, db)
     except CreateYourStoryError as e:
         story = None
         job.status = "failed"
         job.completed_at = datetime.now()
         job.error = str(e)
+        db.commit()
+
+
+def generate_image_task(story: Story, db: Session):
+    path = Path(__file__).parent.parent / "gemini.png"
+    with open(path, "rb") as image_file:
+        story.image = image_file.read()
         db.commit()
 
 
@@ -151,7 +161,9 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
         num_endings=story.num_endings or -1,
         num_winning_endings=story.num_winning_endings or -1,
         num_words=story.num_words or -1,
-        created_at=story.created_at
+        created_at=story.created_at,
+        image_base_64=base64.b64encode(story.image).decode(
+            "ASCII") if story.image else None
     )
 
 

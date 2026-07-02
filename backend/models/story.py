@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Column, SQLModel, Field, Relationship, LargeBinary
 from datetime import datetime
 
 
@@ -13,6 +13,7 @@ class Story(SQLModel, table=True):
     num_endings: int | None = Field(default=None)
     num_winning_endings: int | None = Field(default=None)
     num_words: int | None = Field(default=None)
+    image: bytes | None = Field(default=None, sa_column=Column(LargeBinary))
     created_at: datetime = Field(
         default_factory=datetime.now)
 
@@ -59,3 +60,4 @@ class CompleteStoryPublic(SQLModel):
     num_endings: int
     num_winning_endings: int
     num_words: int
+    image_base_64: str | None
