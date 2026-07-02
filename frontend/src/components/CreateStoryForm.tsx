@@ -53,6 +53,8 @@ function CreateStoryForm({ onSubmit }: CreateStoryFormProps) {
             </option>
             <option value="gemini-3.5-flash">gemini-3.5-flash</option>
             <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite</option>
+            <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+            <option value="gemini-2.5-flash">gemini-2.5-flash</option>
           </select>
           {error && <p className="error-text">{error}</p>}
           <button type="submit" className="generate-btn">
