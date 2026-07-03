@@ -1,3 +1,6 @@
+from models.story import Story
+
+
 STORY_PROMPT = """
 <role>
 You are a game designer and story writer who specializes in designing creative and engaging Choose-Your-Adventure stories.
@@ -28,3 +31,39 @@ You are a game designer and story writer who specializes in designing creative a
 Output the story strictly following the format provided to you.
 </output_format>
 """
+
+
+def generate_story_image_prompt(story: Story) -> str:
+    story_transcript = ""
+    for node in story.nodes:
+        story_transcript += node.content + "\n"
+    PROMPT = f"""
+You are given the complete transcript of a choose-your-own-adventure story.
+
+<transcript>
+{story_transcript}
+</transcript>
+
+Your task is to generate ONE image depicting a single moment that actually occurs within the story.
+
+Choose the moment that:
+- has the greatest dramatic tension or emotional impact,
+- makes the viewer curious about what happens next,
+- does not reveal or spoil the ending,
+- could plausibly have been captured by a camera if someone had been present.
+
+By default, the image should be a highly realistic cinematic photograph—not concept art, not a movie poster, not a book cover, not a collage, and not multiple scenes combined.
+
+The image should feel like a frame from a high-budget live-action film:
+- natural lighting
+- believable environments
+- authentic facial expressions
+- cinematic composition
+- rich detail
+- grounded realism
+
+If the story is clearly set in a stylized fictional universe (for example, anime, western animation, comics, or another recognizable artistic style), faithfully match that world's visual style instead of converting it into live action.
+
+Depict only a single moment. Do not include text, logos, borders, captions, or titles.
+"""
+    return PROMPT
