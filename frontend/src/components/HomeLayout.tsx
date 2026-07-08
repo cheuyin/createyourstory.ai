@@ -23,7 +23,7 @@ export default function HomeLayout() {
           </>
         ) : (
           <>
-            <button>Sign In</button>
+            <button onClick={() => navigate("/login")}>Sign In</button>
             <button onClick={() => navigate("/signup")}>Sign Up</button>
           </>
         )}

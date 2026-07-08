@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import type { User } from "./types";
 import { BASE_URL } from "./api";
 import HomeLayout from "./components/HomeLayout";
+import LoginPage from "./components/LoginPage";
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -59,6 +60,7 @@ function App() {
               />
             </Route>
             <Route path={"/signup"} element={<SignupPage />} />
+            <Route path={"/login"} element={<LoginPage />} />
             <Route path={"/story/:id"} element={<StoryLoader />} />
           </Routes>
         </main>
