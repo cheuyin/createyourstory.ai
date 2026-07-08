@@ -6,7 +6,7 @@ import jwt
 from pwdlib import PasswordHash
 from sqlmodel import Session, select
 from db.database import get_db
-from models.auth import Token, TokenData, User, UserCreate
+from models.auth import Token, TokenData, User, UserCreate, UserPublic
 
 router = APIRouter(
     prefix="/auth",
@@ -56,7 +56,7 @@ async def signup(data: UserCreate, db: SessionDep):
         data={"sub": user.username}
     )
     return {
-        "access_token": access_token
+        "access_token": access_token,
     }
 
 
@@ -117,3 +117,10 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
     if user is None:
         raise credentials_exception
     return user
+
+
+@router.get("/users/me", response_model=UserPublic)
+def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
+    user_public = UserPublic(
+        username=current_user.username, full_name=current_user.full_name)
+    return user_public

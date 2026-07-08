@@ -27,3 +27,8 @@ class UserCreate(SQLModel):
     username: str
     full_name: str
     password: str
+
+
+class UserPublic(SQLModel):
+    username: str
+    full_name: str

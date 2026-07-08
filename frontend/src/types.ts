@@ -42,3 +42,8 @@ export interface APIError {
   error: string;
   message: string;
 }
+
+export interface User {
+  username: string;
+  fullName: string;
+}

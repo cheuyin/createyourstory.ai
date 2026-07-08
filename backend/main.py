@@ -110,11 +110,6 @@ def hello():
     return {"message": "Hello!"}
 
 
-@app.get("/users/me")
-def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
-    return current_user
-
-
 app.include_router(story.router, prefix=settings.API_PREFIX)
 app.include_router(job.router, prefix=settings.API_PREFIX)
 app.include_router(auth.router, prefix=settings.API_PREFIX)
