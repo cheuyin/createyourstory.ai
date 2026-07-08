@@ -37,7 +37,7 @@ export default function SignupPage() {
       }),
     });
     const user_data = await user_response.json();
-    if (!user_response) {
+    if (!user_response.ok) {
       alert(user_data.error);
       return;
     }
