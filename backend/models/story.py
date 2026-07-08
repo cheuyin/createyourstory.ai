@@ -1,5 +1,10 @@
-from sqlmodel import Column, LargeBinary, SQLModel, Field, Relationship, Text
+from typing import TYPE_CHECKING
+
+from sqlmodel import Column, SQLModel, Field, Relationship, Text
 from datetime import datetime
+
+if TYPE_CHECKING:
+    from models.auth import User
 
 
 class Story(SQLModel, table=True):
@@ -14,6 +19,10 @@ class Story(SQLModel, table=True):
     num_winning_endings: int | None = Field(default=None)
     num_words: int | None = Field(default=None)
     image_base_64: str | None = Field(default=None, sa_column=Column(Text))
+    # ==== User =====
+    user_id: int = Field(foreign_key="user.id",
+                         index=True, ondelete="CASCADE")
+    user: "User" = Relationship(back_populates="stories")
     created_at: datetime = Field(
         default_factory=datetime.now)
 
@@ -53,6 +62,7 @@ class CompleteStoryPublic(SQLModel):
     id: int
     title: str
     ai_model: str
+    username: str
     session_id: str | None
     created_at: datetime
     root_node: CompleteStoryNodePublic

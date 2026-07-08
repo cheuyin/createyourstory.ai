@@ -1,9 +1,14 @@
-from fastapi import FastAPI, Request, status
+from typing import Annotated
+
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from routers import auth
+from routers.auth import get_current_user
+from models.auth import User
 from exceptions.exceptions import *
 from core.config import settings
 from routers import story, job
@@ -105,5 +110,11 @@ def hello():
     return {"message": "Hello!"}
 
 
+@app.get("/users/me")
+def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
+    return current_user
+
+
 app.include_router(story.router, prefix=settings.API_PREFIX)
 app.include_router(job.router, prefix=settings.API_PREFIX)
+app.include_router(auth.router, prefix=settings.API_PREFIX)

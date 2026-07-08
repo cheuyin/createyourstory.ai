@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks, statu
 from sqlmodel import Session, select
 import json
 
+from routers.auth import get_current_user
+from models.auth import User
 from core.image_generator import generate_image
 from exceptions.exceptions import *
 from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
@@ -40,8 +42,11 @@ def create_story(
     background_tasks: BackgroundTasks,
     response: Response,
     db: SessionDep,
+    user: User = Depends(get_current_user),
     session_id: str = Depends(get_session_id),
 ):
+    assert user.id
+
     if request.ai_model not in VALID_AI_MODELS:
         raise UnsupportedAIModelError()
 
@@ -49,20 +54,32 @@ def create_story(
     job_id = str(uuid.uuid4())
 
     job = StoryJob(job_id=job_id, session_id=session_id,
-                   theme=request.theme, status="pending")
+                   theme=request.theme, status="pending", user_id=user.id)
 
     db.add(job)
     db.commit()
+    db.refresh(job)
 
     background_tasks.add_task(
         generate_story_task,
         job_id,
         request.theme,
         session_id,
-        request.ai_model
+        request.ai_model,
+        user.id
     )
 
-    return job
+    job_public = StoryJobPublic(
+        story_id=None,
+        job_id=job_id,
+        username=user.username,
+        status="pending",
+        created_at=job.created_at,
+        completed_at=None,
+        error=None
+    )
+
+    return job_public
 
 
 @router.delete("/{story_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -77,7 +94,7 @@ def delete_story(story_id: int, db: SessionDep):
     return
 
 
-def generate_story_task(job_id: str, theme: str, session_id: str, ai_model: str):
+def generate_story_task(job_id: str, theme: str, session_id: str, ai_model: str, user_id: int):
     db = next(get_db())
     statement = select(StoryJob).where(StoryJob.job_id == job_id)
     results = db.exec(statement)
@@ -88,7 +105,7 @@ def generate_story_task(job_id: str, theme: str, session_id: str, ai_model: str)
         job.status = "processing"
         db.commit()
         story = StoryGenerator.generate_story(
-            db, session_id,  ai_model, theme=theme,)
+            db, session_id,  ai_model, user_id=user_id, theme=theme)
         job.story_id = story.id
         generate_story_stats(story)
         job.status = "completed"
@@ -149,6 +166,9 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
     if not root_node:
         raise StoryRootNotFoundError()
     assert story.id
+    user_query = select(User).where(User.id == story.user_id)
+    user = db.exec(user_query).first()
+    assert user
     return CompleteStoryPublic(
         id=story.id,
         title=story.title,
@@ -160,7 +180,8 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
         num_winning_endings=story.num_winning_endings or -1,
         num_words=story.num_words or -1,
         created_at=story.created_at,
-        image_base_64=story.image_base_64
+        image_base_64=story.image_base_64,
+        username=user.username
     )
 
 

@@ -23,7 +23,7 @@ class StoryGenerator:
         return model
 
     @classmethod
-    def generate_story(cls, db: Session, session_id: str,  ai_model: str, theme: str = "fantasy"):
+    def generate_story(cls, db: Session, session_id: str,  ai_model: str, user_id: int, theme: str = "fantasy"):
         try:
             model = cls._get_model(ai_model)
             response = model.invoke([
@@ -39,7 +39,7 @@ class StoryGenerator:
             )
             response = StoryResponseLLM.model_validate(response)
             story = Story(title=response.title,
-                          session_id=session_id, ai_model=ai_model, image_base_64=None)
+                          session_id=session_id, ai_model=ai_model, image_base_64=None, user_id=user_id)
             db.add(story)
             db.flush()
             assert story.id

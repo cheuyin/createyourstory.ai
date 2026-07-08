@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+from models.auth import User
 from models.job import StoryJobPublic, StoryJob
 from sqlmodel import Session, select
 from db.database import get_db
@@ -18,4 +19,16 @@ def get_job_status(job_id: str, db: Session = Depends(get_db)):
         raise JobNotFoundError()
     if job.status == "failed":
         raise StoryGenerationError()
-    return job
+    user = db.exec(statement=select(User).where(
+        User.id == job.user_id)).first()
+    assert user
+    job_public = StoryJobPublic(
+        job_id=job.job_id,
+        username=user.username,
+        status=job.status,
+        created_at=job.created_at,
+        story_id=job.story_id,
+        completed_at=job.completed_at,
+        error=job.error
+    )
+    return job_public

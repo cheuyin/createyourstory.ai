@@ -10,6 +10,8 @@ class StoryJob(SQLModel, table=True):
     status: str
     story_id: int | None = None
     error: str | None = None
+    user_id: int = Field(foreign_key="user.id",
+                         index=True)
     created_at: datetime = Field(
         default_factory=datetime.now)
     completed_at: datetime | None = None
@@ -17,6 +19,7 @@ class StoryJob(SQLModel, table=True):
 
 class StoryJobPublic(SQLModel):
     job_id: str
+    username: str
     status: str
     created_at: datetime
     story_id: int | None
@@ -26,3 +29,4 @@ class StoryJobPublic(SQLModel):
 
 class StoryJobCreate(SQLModel):
     theme: str
+
