@@ -28,6 +28,7 @@ function App() {
       });
       if (!response.ok && response.status === 401) {
         localStorage.removeItem("accessToken");
+        setCurrentUser(null);
       }
       return response;
     };
