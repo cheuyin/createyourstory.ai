@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.get("/{job_id}", response_model=StoryJobPublic)
+@router.get("/stories/{job_id}", response_model=StoryJobPublic)
 def get_job_status(job_id: str, db: Session = Depends(get_db)):
     statement = select(StoryJob).where(StoryJob.job_id == job_id)
     job = db.exec(statement).first()
@@ -32,3 +32,8 @@ def get_job_status(job_id: str, db: Session = Depends(get_db)):
         error=job.error
     )
     return job_public
+
+
+@router.get("/images/{job_id}")
+def get_image_job_status(job_id: str, db: Session = Depends(get_db)):
+    pass
