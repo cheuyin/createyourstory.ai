@@ -126,7 +126,7 @@ def generate_image_task(story: Story, db: Session):
     db.commit()
 
 
-@router.get("/{story_id}/complete", response_model=CompleteStoryPublic)
+@router.get("/{story_id}", response_model=CompleteStoryPublic)
 def get_complete_story(story_id: int, db: SessionDep):
     statement = select(Story).where(Story.id == story_id)
     story = db.exec(statement).first()

@@ -11,7 +11,7 @@ function StoryLoader() {
   const { isPending, error, data } = useQuery({
     queryKey: ["story", id],
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/api/stories/${id}/complete`);
+      const response = await fetch(`${BASE_URL}/api/stories/${id}`);
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
       }
