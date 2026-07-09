@@ -129,11 +129,14 @@ def generate_image_task(story: Story, db: Session):
 
 
 @router.get("/{story_id}", response_model=CompleteStoryPublic)
-def get_complete_story(story_id: int, db: SessionDep):
+def get_complete_story(story_id: int, db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]):
     statement = select(Story).where(Story.id == story_id)
     story = db.exec(statement).first()
     if not story:
         raise StoryNotFoundError()
+    if story.user_id != user.id:
+        raise AuthorizationError(
+            message="You cannot view a story you did not create")
     complete_story = build_complete_story_tree(db, story=story)
     return complete_story
 
