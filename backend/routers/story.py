@@ -142,8 +142,8 @@ def get_complete_story(story_id: int, db: SessionDep, user: Annotated[User, Depe
 
 
 @router.get("/", response_model=list[CompleteStoryPublic])
-def get_all_stories(db: SessionDep):
-    query = select(Story)
+def get_all_stories(db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]):
+    query = select(Story).where(Story.user_id == user.id)
     stories = db.exec(statement=query).all()
 
     def func(story: Story):

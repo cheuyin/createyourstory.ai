@@ -24,6 +24,7 @@ export default function StoryList() {
       }
       return data;
     },
+    retry: 1,
   });
 
   const mutation = useMutation({
@@ -43,7 +44,7 @@ export default function StoryList() {
   });
 
   if (isPending) {
-    return <p>Waiting...</p>;
+    return <p>Loading...</p>;
   }
 
   if (isError) {
