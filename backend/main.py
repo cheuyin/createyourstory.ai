@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from routers import auth
-from routers.auth import get_current_user
+from routers.auth import get_user_from_token
 from models.auth import User
 from exceptions.exceptions import *
 from core.config import settings

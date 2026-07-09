@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks, statu
 from sqlmodel import Session, select
 import json
 
-from routers.auth import get_current_user
+from routers.auth import get_user_from_token
 from models.auth import User
 from core.image_generator import generate_image
 from exceptions.exceptions import *
@@ -42,7 +42,7 @@ def create_story(
     background_tasks: BackgroundTasks,
     response: Response,
     db: SessionDep,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_user_from_token),
     session_id: str = Depends(get_session_id),
 ):
     assert user.id

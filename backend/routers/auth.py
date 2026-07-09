@@ -100,7 +100,7 @@ def authenticate_user(username: str, password: str):
     return user
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
+def get_user_from_token(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -122,7 +122,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
 
 
 @router.get("/users/me", response_model=UserPublic)
-def read_users_me(current_user: Annotated[User, Depends(get_current_user)]):
+def read_users_me(current_user: Annotated[User, Depends(get_user_from_token)]):
     user_public = UserPublic(
         username=current_user.username, full_name=current_user.full_name)
     return user_public
