@@ -31,6 +31,7 @@ export default function StoryList() {
       const response = await fetch(`${BASE_URL}/api/stories/${story_id}`, {
         method: "DELETE",
       });
+      const data = await response.json();
       if (!response.ok) {
         throw Error(`${data.error}: ${data.message}`);
       }

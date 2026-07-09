@@ -14,6 +14,13 @@ class AuthenticationError(CreateYourStoryError):
         super().__init__(message, name)
 
 
+class AuthorizationError(CreateYourStoryError):
+    """user is authenticated but not authorized to perform the action"""
+
+    def __init__(self, message: str = "User is not authorized to do this", name: str = "Not authorized"):
+        super().__init__(message, name)
+
+
 class UnsupportedAIModelError(CreateYourStoryError):
     """selected AI model isn't supported"""
 

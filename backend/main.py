@@ -44,6 +44,15 @@ def authentication_error_handler(_: Request, exc: AuthenticationError):
         })
 
 
+@app.exception_handler(AuthorizationError)
+def authorization_error_handler(_: Request, exc: AuthorizationError):
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"error": exc.name,
+                 "message": exc.message},
+    )
+
+
 @app.exception_handler(UnsupportedAIModelError)
 def unsupported_ai_model_error_handler(_: Request, exc: UnsupportedAIModelError):
     return JSONResponse(

@@ -83,12 +83,14 @@ def create_story(
 
 
 @router.delete("/{story_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_story(story_id: int, db: SessionDep):
+def delete_story(story_id: int, db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]):
     statement = select(Story).where(Story.id == story_id)
-    results = db.exec(statement)
-    if not results:
+    story = db.exec(statement).first()
+    if not story:
         raise StoryNotFoundError()
-    story = results.one()
+    if story.user_id != user.id:
+        raise AuthorizationError(
+            message="You cannot delete stories you did not create")
     db.delete(story)
     db.commit()
     return
