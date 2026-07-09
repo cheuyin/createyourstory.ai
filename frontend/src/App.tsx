@@ -5,7 +5,7 @@ import StoryGenerator from "./components/StoryGenerator";
 import StoryList from "./components/StoryList";
 import SignupPage from "./components/SignupPage";
 import { AuthContext } from "./auth";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import type { User } from "./types";
 import { BASE_URL } from "./api";
 import HomeLayout from "./components/HomeLayout";
@@ -14,16 +14,33 @@ import LoginPage from "./components/LoginPage";
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
+  useLayoutEffect(() => {
+    const { fetch: originalFetch } = window;
+    window.fetch = async (resource, config = {}) => {
+      const token = localStorage.getItem("accessToken");
+      const { headers: givenHeaders, ...restConfig } = config;
+      const response = await originalFetch(resource, {
+        headers: new Headers({
+          Authorization: "Bearer " + token,
+          ...givenHeaders,
+        }),
+        ...restConfig,
+      });
+      if (!response.ok && response.status === 401) {
+        localStorage.removeItem("accessToken");
+      }
+      return response;
+    };
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
   useEffect(() => {
     const fetchUser = async () => {
       const accessToken = localStorage.getItem("accessToken");
       if (accessToken) {
-        const user_response = await fetch(`${BASE_URL}/api/auth/users/me`, {
-          headers: new Headers({
-            Accept: "application/json",
-            Authorization: "Bearer " + accessToken,
-          }),
-        });
+        const user_response = await fetch(`${BASE_URL}/api/auth/users/me`);
         const user_data = await user_response.json();
         if (!user_response.ok) {
           alert(user_data.error);

@@ -26,12 +26,7 @@ export default function LoginPage() {
 
     const { access_token } = data;
     localStorage.setItem("accessToken", access_token);
-    const user_response = await fetch(`${BASE_URL}/api/auth/users/me`, {
-      headers: new Headers({
-        Accept: "application/json",
-        Authorization: "Bearer " + access_token,
-      }),
-    });
+    const user_response = await fetch(`${BASE_URL}/api/auth/users/me`);
     const user_data = await user_response.json();
     if (!user_response.ok) {
       alert(user_data.error);

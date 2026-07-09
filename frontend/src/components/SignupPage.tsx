@@ -20,7 +20,9 @@ export default function SignupPage() {
         username: formData.get("username"),
         password: formData.get("userPassword"),
       }),
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     const data = await response.json();
@@ -30,12 +32,7 @@ export default function SignupPage() {
     }
     const { access_token } = data;
     localStorage.setItem("accessToken", access_token);
-    const user_response = await fetch(`${BASE_URL}/api/auth/users/me`, {
-      headers: new Headers({
-        Accept: "application/json",
-        Authorization: "Bearer " + access_token,
-      }),
-    });
+    const user_response = await fetch(`${BASE_URL}/api/auth/users/me`);
     const user_data = await user_response.json();
     if (!user_response.ok) {
       alert(user_data.error);
