@@ -26,7 +26,12 @@ function App() {
         headers.set("Authorization", `Bearer ${token}`);
       }
 
-      if (!headers.has("Content-Type")) {
+      // Make sure this doesn't set FormData submissinos as JSON
+      if (
+        config.body &&
+        typeof config.body === "string" &&
+        !headers.has("Content-Type")
+      ) {
         headers.set("Content-Type", "application/json");
       }
 
@@ -81,7 +86,11 @@ function App() {
                 element={
                   <div className="story-generator">
                     <StoryGenerator />
-                    <StoryList />
+                    {currentUser ? (
+                      <StoryList />
+                    ) : (
+                      <p>Sign in to view saved stories</p>
+                    )}
                   </div>
                 }
               />
