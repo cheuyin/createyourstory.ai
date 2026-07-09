@@ -7,6 +7,13 @@ class CreateYourStoryError(Exception):
         super().__init__(self.message, self.name)
 
 
+class AuthenticationError(CreateYourStoryError):
+    """user is not authenticated and cannot perform the action"""
+
+    def __init__(self, message: str = "Authentication required", name: str = "Not authenticated"):
+        super().__init__(message, name)
+
+
 class UnsupportedAIModelError(CreateYourStoryError):
     """selected AI model isn't supported"""
 

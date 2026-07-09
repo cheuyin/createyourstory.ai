@@ -33,6 +33,17 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(AuthenticationError)
+def authentication_error_handler(_: Request, exc: AuthenticationError):
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={"error": exc.name,
+                 "message": exc.message},
+        headers={
+            "WWW-Authenticate": "Bearer"
+        })
+
+
 @app.exception_handler(UnsupportedAIModelError)
 def unsupported_ai_model_error_handler(_: Request, exc: UnsupportedAIModelError):
     return JSONResponse(

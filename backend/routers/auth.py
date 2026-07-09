@@ -7,6 +7,7 @@ from pwdlib import PasswordHash
 from sqlmodel import Session, select
 from db.database import get_db
 from models.auth import Token, TokenData, User, UserCreate, UserPublic
+from exceptions.exceptions import *
 
 router = APIRouter(
     prefix="/auth",
@@ -31,8 +32,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
                              password=form_data.password)
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
+        raise AuthenticationError()
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
@@ -101,23 +101,18 @@ def authenticate_user(username: str, password: str):
 
 
 def get_user_from_token(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
         if username is None:
-            raise credentials_exception
+            raise AuthenticationError()
         token_data = TokenData(username=username)
     except jwt.InvalidTokenError:
-        raise credentials_exception
+        raise AuthenticationError()
     assert token_data.username
     user = get_user(username=token_data.username)
     if user is None:
-        raise credentials_exception
+        raise AuthenticationError()
     return user
 
 
