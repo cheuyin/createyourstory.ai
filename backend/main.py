@@ -1,9 +1,14 @@
-from fastapi import FastAPI, Request, status
+from typing import Annotated
+
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from routers import auth
+from routers.auth import get_user_from_token
+from models.auth import User
 from exceptions.exceptions import *
 from core.config import settings
 from routers import story, job
@@ -26,6 +31,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+
+@app.exception_handler(AuthenticationError)
+def authentication_error_handler(_: Request, exc: AuthenticationError):
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={"error": exc.name,
+                 "message": exc.message},
+        headers={
+            "WWW-Authenticate": "Bearer"
+        })
+
+
+@app.exception_handler(AuthorizationError)
+def authorization_error_handler(_: Request, exc: AuthorizationError):
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"error": exc.name,
+                 "message": exc.message},
+    )
 
 
 @app.exception_handler(UnsupportedAIModelError)
@@ -107,3 +132,4 @@ def hello():
 
 app.include_router(story.router, prefix=settings.API_PREFIX)
 app.include_router(job.router, prefix=settings.API_PREFIX)
+app.include_router(auth.router, prefix=settings.API_PREFIX)

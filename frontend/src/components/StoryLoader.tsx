@@ -11,13 +11,14 @@ function StoryLoader() {
   const { isPending, error, data } = useQuery({
     queryKey: ["story", id],
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/api/stories/${id}/complete`);
-      if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
-      }
+      const response = await fetch(`${BASE_URL}/api/stories/${id}`);
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`${data.error}: ${data.message}`);
+      }
       return data;
     },
+    retry: false,
   });
 
   const createNewStory = () => {
@@ -32,7 +33,6 @@ function StoryLoader() {
     return (
       <div className="story-loader">
         <div className="error-message">
-          <h2>Story Not Found</h2>
           <p>{error.message}</p>
           <button onClick={createNewStory}>Go to story generator</button>
         </div>

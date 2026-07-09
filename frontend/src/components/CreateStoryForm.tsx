@@ -33,6 +33,7 @@ function CreateStoryForm({ onSubmit }: CreateStoryFormProps) {
           <input
             type="text"
             name="theme"
+            autoComplete="off"
             placeholder="Enter a theme (e.g. pirates, space, medieval...)"
             className={error ? "error" : ""}
           />

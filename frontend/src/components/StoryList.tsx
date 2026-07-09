@@ -24,6 +24,7 @@ export default function StoryList() {
       }
       return data;
     },
+    retry: 1,
   });
 
   const mutation = useMutation({
@@ -31,6 +32,7 @@ export default function StoryList() {
       const response = await fetch(`${BASE_URL}/api/stories/${story_id}`, {
         method: "DELETE",
       });
+      const data = await response.json();
       if (!response.ok) {
         throw Error(`${data.error}: ${data.message}`);
       }
@@ -42,7 +44,7 @@ export default function StoryList() {
   });
 
   if (isPending) {
-    return <p>Waiting...</p>;
+    return <p>Loading...</p>;
   }
 
   if (isError) {
