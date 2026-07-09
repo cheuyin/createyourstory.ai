@@ -15,18 +15,27 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useLayoutEffect(() => {
-    const { fetch: originalFetch } = window;
+    const originalFetch = window.fetch;
+
     window.fetch = async (resource, config = {}) => {
       const token = localStorage.getItem("accessToken");
-      const { headers: givenHeaders, ...restConfig } = config;
+
+      const headers = new Headers(config.headers);
+
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+
+      if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json");
+      }
+
       const response = await originalFetch(resource, {
-        headers: new Headers({
-          Authorization: "Bearer " + token,
-          ...givenHeaders,
-        }),
-        ...restConfig,
+        ...config,
+        headers,
       });
-      if (!response.ok && response.status === 401) {
+
+      if (response.status === 401) {
         localStorage.removeItem("accessToken");
         setCurrentUser(null);
       }

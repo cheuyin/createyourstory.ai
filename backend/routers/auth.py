@@ -17,11 +17,12 @@ router = APIRouter(
 SessionDep = Annotated[Session, Depends(get_db)]
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="api/auth/login", auto_error=False)
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 0.5
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 password_hash = PasswordHash.recommended()
 
@@ -100,7 +101,27 @@ def authenticate_user(username: str, password: str):
     return user
 
 
-def get_user_from_token(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
+def get_user_from_token(token: Annotated[str | None, Depends(oauth2_scheme)]) -> User:
+    if not token:
+        raise AuthenticationError()
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise AuthenticationError()
+        token_data = TokenData(username=username)
+    except jwt.InvalidTokenError:
+        raise AuthenticationError()
+    assert token_data.username
+    user = get_user(username=token_data.username)
+    if user is None:
+        raise AuthenticationError()
+    return user
+
+
+def get_optional_user_from_token(token: Annotated[str | None, Depends(oauth2_scheme)]) -> User | None:
+    if not token:
+        return None
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")

@@ -20,8 +20,8 @@ class Story(SQLModel, table=True):
     num_words: int | None = Field(default=None)
     image_base_64: str | None = Field(default=None, sa_column=Column(Text))
     # ==== User =====
-    user_id: int = Field(foreign_key="user.id",
-                         index=True, ondelete="CASCADE")
+    user_id: int | None = Field(foreign_key="user.id",
+                                index=True, ondelete="CASCADE", nullable=True)
     user: "User" = Relationship(back_populates="stories")
     created_at: datetime = Field(
         default_factory=datetime.now)
@@ -62,7 +62,7 @@ class CompleteStoryPublic(SQLModel):
     id: int
     title: str
     ai_model: str
-    username: str
+    username: str | None
     session_id: str | None
     created_at: datetime
     root_node: CompleteStoryNodePublic

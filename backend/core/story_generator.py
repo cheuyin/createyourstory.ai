@@ -23,7 +23,7 @@ class StoryGenerator:
         return model
 
     @classmethod
-    def generate_story(cls, db: Session, session_id: str,  ai_model: str, user_id: int, theme: str = "fantasy"):
+    def generate_story(cls, db: Session, session_id: str,  ai_model: str, user_id: int | None, theme: str = "fantasy"):
         try:
             model = cls._get_model(ai_model)
             response = model.invoke([

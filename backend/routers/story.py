@@ -5,13 +5,13 @@ from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks, statu
 from sqlmodel import Session, select
 import json
 
-from routers.auth import get_user_from_token
+from routers.auth import get_user_from_token, get_optional_user_from_token
 from models.auth import User
 from core.image_generator import generate_image
 from exceptions.exceptions import *
 from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
 from models.job import StoryJob, StoryJobPublic
-from db.database import get_db
+from db.database import get_db, engine
 from core.story_generator import StoryGenerator
 
 router = APIRouter(
@@ -42,40 +42,37 @@ def create_story(
     background_tasks: BackgroundTasks,
     response: Response,
     db: SessionDep,
-    user: User = Depends(get_user_from_token),
+    user: User | None = Depends(get_optional_user_from_token),
     session_id: str = Depends(get_session_id),
 ):
-    assert user.id
-
     if request.ai_model not in VALID_AI_MODELS:
         raise UnsupportedAIModelError()
 
     response.set_cookie(key="session_id", value=session_id, httponly=True)
     job_id = str(uuid.uuid4())
 
-    job = StoryJob(job_id=job_id, session_id=session_id,
-                   theme=request.theme, status="pending", user_id=user.id)
+    job = StoryJob(job_id=job_id, session_id=session_id, ai_model=request.ai_model,
+                   theme=request.theme, status="pending", user_id=user.id if user else None)
 
     db.add(job)
     db.commit()
     db.refresh(job)
 
+    assert job.id
+
     background_tasks.add_task(
         generate_story_task,
-        job_id,
-        request.theme,
-        session_id,
-        request.ai_model,
-        user.id
+        job.id
     )
 
     job_public = StoryJobPublic(
         story_id=None,
         job_id=job_id,
-        username=user.username,
+        username=user.username if user else None,
         status="pending",
         created_at=job.created_at,
         completed_at=None,
+        ai_model=request.ai_model,
         error=None
     )
 
@@ -96,31 +93,30 @@ def delete_story(story_id: int, db: SessionDep, user: Annotated[User, Depends(ge
     return
 
 
-def generate_story_task(job_id: str, theme: str, session_id: str, ai_model: str, user_id: int):
-    db = next(get_db())
-    statement = select(StoryJob).where(StoryJob.job_id == job_id)
-    results = db.exec(statement)
-    job = results.first()
-    if not job:
-        raise JobNotFoundError()
-    try:
-        job.status = "processing"
-        db.commit()
-        story = StoryGenerator.generate_story(
-            db, session_id,  ai_model, user_id=user_id, theme=theme)
-        job.story_id = story.id
-        generate_story_stats(story)
-        job.status = "completed"
-        job.completed_at = datetime.now()
-        db.commit()
-        db.refresh(story)
-        generate_image_task(story, db)
-    except CreateYourStoryError as e:
-        story = None
-        job.status = "failed"
-        job.completed_at = datetime.now()
-        job.error = str(e)
-        db.commit()
+def generate_story_task(job_id: int):
+    with Session(engine) as db:
+        job = None
+        try:
+            job = db.get(StoryJob, job_id)
+            assert job
+            job.status = "processing"
+            db.commit()
+            db.refresh(job)
+            story = StoryGenerator.generate_story(
+                db, job.session_id,  job.ai_model, user_id=job.user_id if job.user_id else None, theme=job.theme)
+            job.story_id = story.id
+            generate_story_stats(story)
+            job.status = "completed"
+            job.completed_at = datetime.now()
+            db.commit()
+            db.refresh(story)
+            generate_image_task(story, db)
+        except Exception as e:
+            if job:
+                job.status = "failed"
+                job.completed_at = datetime.now()
+                job.error = str(e)
+                db.commit()
 
 
 def generate_image_task(story: Story, db: Session):
@@ -129,14 +125,18 @@ def generate_image_task(story: Story, db: Session):
 
 
 @router.get("/{story_id}", response_model=CompleteStoryPublic)
-def get_complete_story(story_id: int, db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]):
+def get_complete_story(story_id: int, db: SessionDep, user: Annotated[User | None, Depends(get_optional_user_from_token)]):
     statement = select(Story).where(Story.id == story_id)
     story = db.exec(statement).first()
     if not story:
         raise StoryNotFoundError()
-    if story.user_id != user.id:
-        raise AuthorizationError(
-            message="You cannot view a story you did not create")
+    if story.user_id is not None:
+        if not user:
+            raise AuthorizationError(
+                message="You cannot view other users' stories as a guest")
+        if story.user_id != user.id:
+            raise AuthorizationError(
+                message="You are not authorized to view this story")
     complete_story = build_complete_story_tree(db, story=story)
     return complete_story
 
@@ -173,7 +173,6 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
     assert story.id
     user_query = select(User).where(User.id == story.user_id)
     user = db.exec(user_query).first()
-    assert user
     return CompleteStoryPublic(
         id=story.id,
         title=story.title,
@@ -186,7 +185,7 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
         num_words=story.num_words or -1,
         created_at=story.created_at,
         image_base_64=story.image_base_64,
-        username=user.username
+        username=user.username if user else None
     )
 
 

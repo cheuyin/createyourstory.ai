@@ -21,10 +21,10 @@ def get_job_status(job_id: str, db: Session = Depends(get_db)):
         raise StoryGenerationError()
     user = db.exec(statement=select(User).where(
         User.id == job.user_id)).first()
-    assert user
     job_public = StoryJobPublic(
         job_id=job.job_id,
-        username=user.username,
+        username=user.username if user else None,
+        ai_model=job.ai_model,
         status=job.status,
         created_at=job.created_at,
         story_id=job.story_id,
