@@ -7,11 +7,10 @@ import json
 
 from routers.auth import get_user_from_token, get_optional_user_from_token
 from models.auth import User
-from core.image_generator import generate_image
 from exceptions.exceptions import *
 from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
 from models.job import StoryJob, StoryJobPublic
-from db.database import get_db, engine
+from db.database import SessionDep, engine
 from core.story_generator import StoryGenerator
 
 router = APIRouter(
@@ -19,7 +18,6 @@ router = APIRouter(
     tags=["stories"]
 )
 
-SessionDep = Annotated[Session, Depends(get_db)]
 
 VALID_AI_MODELS = [
     "gemini-3.5-flash",
@@ -109,19 +107,12 @@ def generate_story_task(job_id: int):
             job.status = "completed"
             job.completed_at = datetime.now()
             db.commit()
-            db.refresh(story)
-            generate_image_task(story, db)
         except Exception as e:
             if job:
                 job.status = "failed"
                 job.completed_at = datetime.now()
                 job.error = str(e)
                 db.commit()
-
-
-def generate_image_task(story: Story, db: Session):
-    generate_image(story)
-    db.commit()
 
 
 @router.get("/{story_id}", response_model=CompleteStoryPublic)
