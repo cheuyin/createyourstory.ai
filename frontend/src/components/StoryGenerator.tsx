@@ -68,7 +68,12 @@ export default function StoryGenerator() {
 
   useEffect(() => {
     if (isJobFetchingCompleted) {
-      navigate("/story/" + job.story_id);
+      navigate("/story/" + job.story_id, {
+        state: {
+          storyId: job.story_id,
+          imageJobId: job.image_job_id,
+        },
+      });
     }
   }, [isJobFetchingCompleted, job, navigate]);
 
