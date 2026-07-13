@@ -2,8 +2,9 @@ from datetime import datetime
 
 from models.story import Story
 from core.prompts import generate_story_image_prompt
+from core.image_generator import ImageGenerator
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openrouter import ChatOpenRouter
 from fastapi import BackgroundTasks
 import uuid
 
@@ -29,15 +30,17 @@ def get_job_status(job_id: str, background_tasks: BackgroundTasks, db: SessionDe
     if not job:
         raise JobNotFoundError()
     if job.status == "failed":
-        raise StoryGenerationError()
-    user = db.get(User, job.user_id)
+        raise StoryGenerationError(
+            message=job.error or "Error occured during story generation")
+
+    user = db.get(User, job.user_id) if job.user_id else None
 
     image_job_id = None
     if job.status == "completed":
         image_job_id = str(uuid.uuid4())
         assert job.story_id
         image_job = ImageJob(story_id=job.story_id, job_id=image_job_id, image_model="gemini-3.1-flash-image",
-                             theme=job.theme, status="processing", user_id=job.user_id if job.user_id else None)
+                             theme=job.theme, status="processing", user_id=user.id if user else None)
 
         job.image_job_id = image_job_id
 
@@ -70,7 +73,7 @@ def get_image_job_status(job_id: str, db: SessionDep):
     if job.status == "failed":
         raise CreateYourStoryError(
             name="Image generation failed", message=job.error or "Something failed during image generation")
-    user = db.get(User, job.user_id)
+    user = db.get(User, job.user_id) if job.user_id else None
     return ImageJobPublic(
         job_id=job_id,
         theme=job.theme,
@@ -84,9 +87,9 @@ def get_image_job_status(job_id: str, db: SessionDep):
     )
 
 
-image_model = ChatGoogleGenerativeAI(
-    model="gemini-3.1-flash-image",
-    image_config={
+image_model = ChatOpenRouter(
+    model="google/gemini-3.1-flash-image",
+    model_kwargs={
         "aspect_ratio": "4:3",
         "image_size": "1K"
     },
@@ -104,14 +107,9 @@ def generate_image_task(job_id: str):
         if not story:
             raise StoryNotFoundError()
         try:
-            response = image_model.invoke(
-                generate_story_image_prompt(story))
-            content = response.content_blocks[0]
-            if content["type"] != "image" or "base64" not in content:
-                raise CreateYourStoryError(
-                    message="Image model returned invalid response", name="Image generation error")
-            story.image_base_64 = content["base64"]
-
+            prompt = generate_story_image_prompt(story)
+            image_data = ImageGenerator.generate_image(prompt)
+            story.image_base_64 = image_data
             image_job.status = "completed"
             image_job.completed_at = datetime.now()
 

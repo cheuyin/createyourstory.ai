@@ -46,7 +46,6 @@ function StoryLoader() {
     return (
       <div className="story-loader">
         <StoryGame story={data} onNewStory={createNewStory} />
-        {/* <img src={`data:image/jpeg;base64,${data.image_base_64}`} /> */}
         <ImageLoader storyId={state.storyId} imageJobId={state.imageJobId} />
       </div>
     );

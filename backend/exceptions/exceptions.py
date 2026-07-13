@@ -7,6 +7,13 @@ class CreateYourStoryError(Exception):
         super().__init__(self.message, self.name)
 
 
+class InsufficientCreditsError(CreateYourStoryError):
+    """user has run out of AI credits and cannot perform the action"""
+
+    def __init__(self, message: str = "Insufficient AI credits", name: str = "AI credits exhausted"):
+        super().__init__(message, name)
+
+
 class AuthenticationError(CreateYourStoryError):
     """user is not authenticated and cannot perform the action"""
 

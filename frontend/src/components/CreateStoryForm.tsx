@@ -49,13 +49,16 @@ function CreateStoryForm({ onSubmit }: CreateStoryFormProps) {
             className="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
             defaultValue={"gemini-3.1-flash-lite"}
           >
-            <option value="gemini-3.1-pro-preview">
+            <option value="google/gemini-3.1-pro-preview">
               gemini-3.1-pro-preview
             </option>
-            <option value="gemini-3.5-flash">gemini-3.5-flash</option>
-            <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite</option>
-            <option value="gemini-2.5-pro">gemini-2.5-pro</option>
-            <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+            <option value="google/gemini-3.5-flash">gemini-3.5-flash</option>
+            <option value="google/gemini-3.1-flash-lite">
+              gemini-3.1-flash-lite
+            </option>
+            <option value="google/gemini-2.5-pro">gemini-2.5-pro</option>
+            <option value="google/gemini-2.5-flash">gemini-2.5-flash</option>
+            <option value="x-ai/grok-4.5">grok-4.5</option>
           </select>
           {error && <p className="error-text">{error}</p>}
           <button type="submit" className="generate-btn">

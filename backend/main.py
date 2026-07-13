@@ -33,6 +33,14 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(InsufficientCreditsError)
+def insufficient_credits_error_handler(_: Request, exc: InsufficientCreditsError):
+    return JSONResponse(
+        status_code=status.HTTP_402_PAYMENT_REQUIRED,
+        content={"error": exc.name,
+                 "message": exc.message})
+
+
 @app.exception_handler(AuthenticationError)
 def authentication_error_handler(_: Request, exc: AuthenticationError):
     return JSONResponse(
