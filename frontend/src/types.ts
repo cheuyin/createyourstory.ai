@@ -23,6 +23,7 @@ export interface CompleteStoryPublic {
   num_endings: number;
   num_winning_endings: number;
   num_words: number;
+  image_job_id: string | null;
   image_base_64: string | null;
 }
 

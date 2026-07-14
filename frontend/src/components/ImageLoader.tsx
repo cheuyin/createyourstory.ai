@@ -1,17 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ImageJobPublic } from "../types";
+import type { CompleteStoryPublic, ImageJobPublic } from "../types";
 import { BASE_URL } from "../api";
 
 interface ImageLoaderProps {
-  storyId: number;
-  imageJobId: string;
+  story: CompleteStoryPublic;
 }
 
-function ImageLoader({ storyId, imageJobId }: ImageLoaderProps) {
+function ImageLoader({ story }: ImageLoaderProps) {
   const imagePoll = useQuery({
-    queryKey: ["image_poll", imageJobId],
+    queryKey: ["image_poll", story.image_job_id],
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/api/jobs/images/${imageJobId}`);
+      const response = await fetch(
+        `${BASE_URL}/api/jobs/images/${story.image_job_id}`,
+      );
       const data = await response.json();
       if (!response.ok) {
         throw Error(`${data.error}: ${data.message}`);
@@ -33,9 +34,9 @@ function ImageLoader({ storyId, imageJobId }: ImageLoaderProps) {
     imagePoll.data && imagePoll.data.status == "completed";
 
   const imageQuery = useQuery({
-    queryKey: ["story_image", storyId],
+    queryKey: ["story_image", story.id],
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/api/stories/${storyId}`);
+      const response = await fetch(`${BASE_URL}/api/stories/${story.id}`);
       const data = await response.json();
       if (!response.ok) {
         throw Error(`${data.error}: ${data.message}`);

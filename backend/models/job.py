@@ -1,5 +1,10 @@
-from sqlmodel import SQLModel, Field
+from typing import TYPE_CHECKING
+
+from sqlmodel import Relationship, SQLModel, Field
 from datetime import datetime
+
+if TYPE_CHECKING:
+    from models.story import Story
 
 
 class StoryJob(SQLModel, table=True):
@@ -37,7 +42,9 @@ class ImageJob(SQLModel, table=True):
     theme: str
     status: str
     image_model: str
-    story_id: int
+    story_id: int = Field(foreign_key="story.id",
+                          index=True, ondelete="CASCADE")
+    story: "Story" = Relationship(back_populates="image_job")
     error: str | None = None
     user_id: int | None = Field(foreign_key="user.id",
                                 index=True, nullable=True)

@@ -110,6 +110,7 @@ def generate_image_task(job_id: str):
             prompt = generate_story_image_prompt(story)
             image_data = ImageGenerator.generate_image(prompt)
             story.image_base_64 = image_data
+            story.image_job = image_job
             image_job.status = "completed"
             image_job.completed_at = datetime.now()
 

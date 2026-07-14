@@ -4,6 +4,7 @@ from sqlmodel import Column, SQLModel, Field, Relationship, Text
 from datetime import datetime
 
 if TYPE_CHECKING:
+    from models.job import ImageJob
     from models.auth import User
 
 
@@ -23,6 +24,7 @@ class Story(SQLModel, table=True):
     user_id: int | None = Field(foreign_key="user.id",
                                 index=True, ondelete="CASCADE", nullable=True)
     user: "User" = Relationship(back_populates="stories")
+    image_job: "ImageJob" = Relationship(back_populates="story")
     created_at: datetime = Field(
         default_factory=datetime.now)
 
@@ -70,4 +72,5 @@ class CompleteStoryPublic(SQLModel):
     num_endings: int
     num_winning_endings: int
     num_words: int
+    image_job_id: str | None
     image_base_64: str | None

@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import LoadingStatus from "./LoadingStatus";
 import { useQuery } from "@tanstack/react-query";
 import StoryGame from "./StoryGame";
@@ -8,7 +8,6 @@ import ImageLoader from "./ImageLoader";
 function StoryLoader() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { state } = useLocation();
 
   const { isPending, error, data } = useQuery({
     queryKey: ["story", id],
@@ -46,7 +45,7 @@ function StoryLoader() {
     return (
       <div className="story-loader">
         <StoryGame story={data} onNewStory={createNewStory} />
-        <ImageLoader storyId={state.storyId} imageJobId={state.imageJobId} />
+        <ImageLoader story={data} />
       </div>
     );
   }
