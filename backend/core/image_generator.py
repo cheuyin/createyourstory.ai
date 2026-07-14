@@ -1,6 +1,8 @@
 import requests
 import os
 
+from exceptions.exceptions import ImageGenerationException
+
 
 class ImageGenerator:
 
@@ -20,8 +22,10 @@ class ImageGenerator:
             "Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}",
             "Content-Type": "application/json",
         }
-
-        response = requests.post(URL, json=BODY, headers=HEADERS)
-        response.raise_for_status()
-        data = response.json()
-        return data["data"][0]["b64_json"]
+        try:
+            response = requests.post(URL, json=BODY, headers=HEADERS)
+            response.raise_for_status()
+            data = response.json()
+            return data["data"][0]["b64_json"]
+        except Exception as e:
+            raise ImageGenerationException(message=str(e))

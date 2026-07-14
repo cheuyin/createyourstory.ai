@@ -33,6 +33,14 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(ImageGenerationException)
+def image_generation_error_handler(_: Request, exc: ImageGenerationException):
+    return JSONResponse(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        content={"error": exc.name,
+                 "message": exc.message})
+
+
 @app.exception_handler(InsufficientCreditsError)
 def insufficient_credits_error_handler(_: Request, exc: InsufficientCreditsError):
     return JSONResponse(

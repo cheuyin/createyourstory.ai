@@ -46,12 +46,16 @@ function ImageLoader({ story }: ImageLoaderProps) {
     enabled: isImageJobCompleted,
   });
 
-  if (!isImageJobCompleted) {
+  if (!imagePoll.error && !isImageJobCompleted) {
     return <p>Image is being created...</p>;
   }
 
   if (imagePoll.error) {
-    return <p>Couldn't create image: {imagePoll.error.message}</p>;
+    return (
+      <p>
+        {imagePoll.error.name} {imagePoll.error.message}
+      </p>
+    );
   }
 
   if (imageQuery.isPending) {

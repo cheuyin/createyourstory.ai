@@ -71,8 +71,8 @@ def get_image_job_status(job_id: str, db: SessionDep):
     if not job:
         raise JobNotFoundError(message="Image job not found")
     if job.status == "failed":
-        raise CreateYourStoryError(
-            name="Image generation failed", message=job.error or "Something failed during image generation")
+        raise ImageGenerationException(
+            message=job.error or "Something went wrong during image generation")
     user = db.get(User, job.user_id) if job.user_id else None
     return ImageJobPublic(
         job_id=job_id,
@@ -113,7 +113,10 @@ def generate_image_task(job_id: str):
             story.image_job = image_job
             image_job.status = "completed"
             image_job.completed_at = datetime.now()
-
+        except ImageGenerationException as e:
+            image_job.status = "failed"
+            image_job.error = e.message
+            image_job.completed_at = datetime.now()
         except Exception as e:
             image_job.status = "failed"
             image_job.error = str(e)
