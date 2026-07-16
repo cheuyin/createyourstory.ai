@@ -17,7 +17,11 @@ class ImageGenerator:
         BODY = {
             "model": "x-ai/grok-imagine-image-quality",
             "prompt": prompt,
+            "aspect_ratio": "3:2",
+            "resolution": "1K",
+            "output_format": "jpeg",
         }
+        
         HEADERS = {
             "Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}",
             "Content-Type": "application/json",

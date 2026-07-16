@@ -52,7 +52,7 @@ class StoryGenerator:
 
             db.commit()
             return story
-        except ValidationError:
+        except ValidationError as e:
             db.rollback()
             raise StoryResponseValidationError()
         except Exception as e:
