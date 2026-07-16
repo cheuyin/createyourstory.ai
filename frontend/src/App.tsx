@@ -6,13 +6,13 @@ import StoryList from "./components/StoryList";
 import SignupPage from "./components/SignupPage";
 import { AuthContext } from "./auth";
 import { useEffect, useLayoutEffect, useState } from "react";
-import type { User } from "./types";
+import type { UserPublic } from "./types";
 import { BASE_URL } from "./api";
 import HomeLayout from "./components/HomeLayout";
 import LoginPage from "./components/LoginPage";
 
 function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserPublic | null>(null);
 
   useLayoutEffect(() => {
     const originalFetch = window.fetch;

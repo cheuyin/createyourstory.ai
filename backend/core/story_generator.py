@@ -1,7 +1,7 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openrouter import ChatOpenRouter
 from pydantic import ValidationError
 from sqlmodel import Session
-from exceptions.exceptions import StoryResponseValidationError
+from exceptions.exceptions import *
 from models.story import Story, StoryNode, StoryOption
 from core.models import StoryResponseLLM, StoryNodeLLM
 from core.prompts import STORY_PROMPT
@@ -14,11 +14,14 @@ load_dotenv()
 class StoryGenerator:
     @classmethod
     def _get_model(cls, ai_model: str):
-        model = ChatGoogleGenerativeAI(
+        model = ChatOpenRouter(
             model=ai_model,
             max_tokens=None,
             timeout=None,
             max_retries=2,
+            reasoning={
+                "effort": "medium"
+            }
         ).with_structured_output(schema=StoryResponseLLM.model_json_schema(), method="json_schema")
         return model
 
@@ -49,8 +52,14 @@ class StoryGenerator:
 
             db.commit()
             return story
-        except ValidationError:
+        except ValidationError as e:
+            db.rollback()
             raise StoryResponseValidationError()
+        except Exception as e:
+            db.rollback()
+            if "429" in str(e):
+                raise InsufficientCreditsError()
+            raise
 
     @classmethod
     def _process_story_node(cls, db: Session, story_id: int, story: StoryResponseLLM, curr_node_id: int, is_root: bool = False) -> StoryNode:

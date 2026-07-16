@@ -14,21 +14,27 @@ export interface CompleteStoryNodePublic {
 export interface CompleteStoryPublic {
   id: number;
   title: string;
-  session_id: string | null;
   ai_model: string;
+  username: string;
+  session_id: string | null;
   created_at: Date;
   root_node: CompleteStoryNodePublic;
   all_nodes: Record<number, CompleteStoryNodePublic>;
   num_endings: number;
   num_winning_endings: number;
   num_words: number;
+  image_job_id: string | null;
+  image_base_64: string | null;
 }
 
 export interface StoryJobPublic {
   job_id: string;
+  username: string;
   status: string;
+  ai_model: string;
   created_at: Date;
   story_id: number | null;
+  image_job_id: string | null;
   completed_at: Date | null;
   error: string | null;
 }
@@ -43,7 +49,19 @@ export interface APIError {
   message: string;
 }
 
-export interface User {
+export interface UserPublic {
   username: string;
   fullName: string;
+}
+
+export interface ImageJobPublic {
+  job_id: string;
+  theme: string;
+  status: string;
+  image_model: string;
+  story_id: number | null;
+  error: string | null;
+  username: string | null;
+  created_at: Date;
+  completed_at: Date | null;
 }

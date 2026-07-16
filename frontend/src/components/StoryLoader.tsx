@@ -3,6 +3,7 @@ import LoadingStatus from "./LoadingStatus";
 import { useQuery } from "@tanstack/react-query";
 import StoryGame from "./StoryGame";
 import { BASE_URL } from "../api";
+import ImageLoader from "./ImageLoader";
 
 function StoryLoader() {
   const { id } = useParams();
@@ -44,7 +45,7 @@ function StoryLoader() {
     return (
       <div className="story-loader">
         <StoryGame story={data} onNewStory={createNewStory} />
-        <img src={`data:image/jpeg;base64,${data.image_base_64}`} />
+        <ImageLoader story={data} />
       </div>
     );
   }

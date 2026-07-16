@@ -7,11 +7,10 @@ import json
 
 from routers.auth import get_user_from_token, get_optional_user_from_token
 from models.auth import User
-from core.image_generator import generate_image
 from exceptions.exceptions import *
 from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
 from models.job import StoryJob, StoryJobPublic
-from db.database import get_db, engine
+from db.database import SessionDep, engine
 from core.story_generator import StoryGenerator
 
 router = APIRouter(
@@ -19,14 +18,15 @@ router = APIRouter(
     tags=["stories"]
 )
 
-SessionDep = Annotated[Session, Depends(get_db)]
 
 VALID_AI_MODELS = [
-    "gemini-3.5-flash",
-    "gemini-3.1-pro-preview",
-    "gemini-3.1-flash-lite",
-    "gemini-2.5-flash",
-    "gemini-2.5-pro"
+    "google/gemini-3.5-flash",
+    "google/gemini-3.1-pro-preview",
+    "google/gemini-3.1-flash-lite",
+    "google/gemini-2.5-flash",
+    "google/gemini-2.5-pro",
+    "anthropic/claude-sonnet-4.5",
+    "x-ai/grok-4.5"
 ]
 
 
@@ -109,19 +109,12 @@ def generate_story_task(job_id: int):
             job.status = "completed"
             job.completed_at = datetime.now()
             db.commit()
-            db.refresh(story)
-            generate_image_task(story, db)
         except Exception as e:
             if job:
                 job.status = "failed"
                 job.completed_at = datetime.now()
                 job.error = str(e)
                 db.commit()
-
-
-def generate_image_task(story: Story, db: Session):
-    generate_image(story)
-    db.commit()
 
 
 @router.get("/{story_id}", response_model=CompleteStoryPublic)
@@ -184,6 +177,7 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
         num_winning_endings=story.num_winning_endings or -1,
         num_words=story.num_words or -1,
         created_at=story.created_at,
+        image_job_id=story.image_job.job_id,
         image_base_64=story.image_base_64,
         username=user.username if user else None
     )

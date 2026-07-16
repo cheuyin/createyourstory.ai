@@ -17,7 +17,9 @@ export default function StoryGenerator() {
       if (!job) {
         return null;
       }
-      const response = await fetch(`${BASE_URL}/api/jobs/${job.job_id}`);
+      const response = await fetch(
+        `${BASE_URL}/api/jobs/stories/${job.job_id}`,
+      );
       const data = await response.json();
       if (!response.ok) {
         throw Error(`${data.error}: ${data.message}`);
@@ -66,7 +68,12 @@ export default function StoryGenerator() {
 
   useEffect(() => {
     if (isJobFetchingCompleted) {
-      navigate("/story/" + job.story_id);
+      navigate("/story/" + job.story_id, {
+        state: {
+          storyId: job.story_id,
+          imageJobId: job.image_job_id,
+        },
+      });
     }
   }, [isJobFetchingCompleted, job, navigate]);
 
