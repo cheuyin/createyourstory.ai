@@ -2,6 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BASE_URL } from "../api";
 import type { CompleteStoryPublic } from "../types";
 import {
+  Button,
+  Card,
+  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -44,11 +47,19 @@ export default function StoryList() {
   });
 
   if (isPending) {
-    return <p>Loading...</p>;
+    return (
+      <div className="mt-6 flex justify-center">
+        <Spinner size="lg" aria-label="Loading saved stories" />
+      </div>
+    );
   }
 
   if (isError) {
-    return <p>{error.message}</p>;
+    return (
+      <Card className="mt-6">
+        <p className="text-red-600 dark:text-red-400">{error.message}</p>
+      </Card>
+    );
   }
 
   if (mutation.isError) {
@@ -65,47 +76,54 @@ export default function StoryList() {
   };
 
   return (
-    <div className="shadow-xl p-4 rounded-lg mt-6">
-      <h2 className="text-3xl text-center">Saved Stories</h2>
-      <Table hoverable>
-        <TableHead>
-          <TableRow>
-            <TableHeadCell>ID</TableHeadCell>
-            <TableHeadCell>Title</TableHeadCell>
-            <TableHeadCell>Word Count</TableHeadCell>
-            <TableHeadCell>Model</TableHeadCell>
-            <TableHeadCell>Date Created</TableHeadCell>
-            <TableHeadCell>
-              <span className="sr-only">Delete</span>
-            </TableHeadCell>
-          </TableRow>
-        </TableHead>
-        <TableBody className="divide-y">
-          {data.map((story: CompleteStoryPublic) => (
-            <TableRow
-              key={story.id}
-              className="bg-white dark:border-gray-700 dark:bg-gray-800 hover:cursor-pointer"
-              onClick={() => handleClick(story)}
-            >
-              <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                {story.id}
-              </TableCell>
-              <TableCell>{story.title}</TableCell>
-              <TableCell>{story.num_words} words</TableCell>
-              <TableCell>{story.ai_model}</TableCell>
-              <TableCell>
-                {new Date(story.created_at).toLocaleString()}
-              </TableCell>
-              <TableCell
-                onClick={(ev) => handleDelete(ev, story.id)}
-                className="font-medium text-primary-600 hover:underline dark:text-red-200"
-              >
-                Delete
-              </TableCell>
+    <Card className="mt-6">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Saved Stories
+      </h2>
+      <div className="overflow-x-auto">
+        <Table hoverable>
+          <TableHead>
+            <TableRow>
+              <TableHeadCell>ID</TableHeadCell>
+              <TableHeadCell>Title</TableHeadCell>
+              <TableHeadCell>Word Count</TableHeadCell>
+              <TableHeadCell>Model</TableHeadCell>
+              <TableHeadCell>Date Created</TableHeadCell>
+              <TableHeadCell>
+                <span className="sr-only">Delete</span>
+              </TableHeadCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHead>
+          <TableBody className="divide-y">
+            {data.map((story: CompleteStoryPublic) => (
+              <TableRow
+                key={story.id}
+                className="bg-white hover:cursor-pointer dark:border-gray-700 dark:bg-gray-800"
+                onClick={() => handleClick(story)}
+              >
+                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                  {story.id}
+                </TableCell>
+                <TableCell>{story.title}</TableCell>
+                <TableCell>{story.num_words} words</TableCell>
+                <TableCell>{story.ai_model}</TableCell>
+                <TableCell>
+                  {new Date(story.created_at).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    size="xs"
+                    color="red"
+                    onClick={(ev) => handleDelete(ev, story.id)}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
   );
 }
