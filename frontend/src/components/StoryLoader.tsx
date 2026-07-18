@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import StoryGame from "./StoryGame";
 import { BASE_URL } from "../api";
 import ImageLoader from "./ImageLoader";
+import { Alert, Button } from "flowbite-react";
 
 function StoryLoader() {
   const { id } = useParams();
@@ -32,21 +33,21 @@ function StoryLoader() {
 
   if (error) {
     return (
-      <div className="story-loader">
-        <div className="error-message">
-          <p>{error.message}</p>
-          <button onClick={createNewStory}>Go to story generator</button>
-        </div>
-      </div>
+      <Alert color="failure">
+        <p className="mb-3">{error.message}</p>
+        <Button size="sm" color="failure" onClick={createNewStory}>
+          Go to story generator
+        </Button>
+      </Alert>
     );
   }
 
   if (data) {
     return (
-      <div className="story-loader">
+      <>
         <StoryGame story={data} onNewStory={createNewStory} />
         <ImageLoader story={data} />
-      </div>
+      </>
     );
   }
 }

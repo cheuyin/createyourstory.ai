@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CompleteStoryNodePublic, CompleteStoryPublic } from "../types";
-import { Badge } from "flowbite-react";
+import { Alert, Badge, Button, Card } from "flowbite-react";
 
 interface StoryGameProps {
   story: CompleteStoryPublic;
@@ -26,68 +26,69 @@ function StoryGame({ story, onNewStory }: StoryGameProps) {
   };
 
   return (
-    <div className="story-game">
-      <header className="story-header">
-        <h2>{story.title}</h2>
-        <Badge className="w-fit rounded-lg">{story.ai_model}</Badge>
-        <Badge className="w-fit rounded-lg" color="success">
-          {story.num_words} words
-        </Badge>
-        <Badge className="w-fit rounded-lg" color="indigo">
-          {story.num_endings} endings
-        </Badge>
-        <Badge className="w-fit rounded-lg" color="yellow">
-          {story.num_winning_endings} winning endings
-        </Badge>
-      </header>
-
-      <div className="story-content">
-        {currentNode && (
-          <div className="story-node">
-            <p>{currentNode.content}</p>
-            {currentNode.is_ending ? (
-              <div className="story-ending">
-                <h3>
-                  {currentNode.is_winning_ending ? "Congratuations" : "End"}
-                </h3>
-                {currentNode.is_winning_ending
-                  ? "You reached a winning ending"
-                  : "Your adventure has ended"}
-              </div>
-            ) : (
-              <div className="story-options">
-                <h3>What will you do?</h3>
-                <div className="options-list">
-                  {currentNode.options.map((option, index) => {
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => chooseOption(option.node_id)}
-                        className="option-btn"
-                      >
-                        {option.text}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="story-controls">
-          <button onClick={restartStory} className="reset-btn">
-            Restart Story
-          </button>
+    <Card>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {story.title}
+        </h2>
+        <div className="mt-2 flex flex-wrap justify-center gap-2">
+          <Badge>{story.ai_model}</Badge>
+          <Badge color="success">{story.num_words} words</Badge>
+          <Badge color="indigo">{story.num_endings} endings</Badge>
+          <Badge color="yellow">
+            {story.num_winning_endings} winning endings
+          </Badge>
         </div>
-
-        {onNewStory && (
-          <button onClick={onNewStory} className="new-story-btn">
-            New Story
-          </button>
-        )}
       </div>
-    </div>
+
+      {currentNode && (
+        <div>
+          <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+            {currentNode.content}
+          </p>
+
+          {currentNode.is_ending ? (
+            <Alert
+              color={currentNode.is_winning_ending ? "success" : "gray"}
+              className="mt-6"
+            >
+              <span className="font-semibold">
+                {currentNode.is_winning_ending ? "Congratulations!" : "The End"}
+              </span>
+              <br />
+              {currentNode.is_winning_ending
+                ? "You reached a winning ending."
+                : "Your adventure has ended."}
+            </Alert>
+          ) : (
+            <div className="mt-6">
+              <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+                What will you do?
+              </h3>
+              <div className="flex flex-col gap-3">
+                {currentNode.options.map((option, index) => (
+                  <Button
+                    key={index}
+                    color="light"
+                    className="justify-start text-left"
+                    onClick={() => chooseOption(option.node_id)}
+                  >
+                    {option.text}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="mt-6 flex justify-center gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+        <Button color="gray" onClick={restartStory}>
+          Restart Story
+        </Button>
+        {onNewStory && <Button onClick={onNewStory}>New Story</Button>}
+      </div>
+    </Card>
   );
 }
 
