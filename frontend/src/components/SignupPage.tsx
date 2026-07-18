@@ -1,7 +1,8 @@
 import { useContext } from "react";
 import { BASE_URL } from "../api";
 import { AuthContext } from "../auth";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { Button, Card, Label, TextInput } from "flowbite-react";
 
 export default function SignupPage() {
   const { setCurrentUser } = useContext(AuthContext);
@@ -46,33 +47,60 @@ export default function SignupPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="fullname-input">Full Name</label>
-      <input
-        id="fullname-input"
-        name="full_name"
-        required
-        type="text"
-        autoComplete="off"
-      />
-      <label htmlFor="Username-input">Username</label>
-      <input
-        id="Username-input"
-        name="username"
-        required
-        type="Username"
-        autoComplete="off"
-      />
-      <label htmlFor="password-input">Password</label>
-      <input
-        aria-describedby="password-hint"
-        id="password-input"
-        name="userPassword"
-        required
-        type="password"
-        autoComplete="off"
-      />
-      <button type="submit">Create Account</button>
-    </form>
+    <div className="flex justify-center">
+      <Card className="w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Create an account
+        </h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <div className="mb-2 block">
+              <Label htmlFor="fullname-input">Full name</Label>
+            </div>
+            <TextInput
+              id="fullname-input"
+              name="full_name"
+              required
+              type="text"
+              autoComplete="off"
+            />
+          </div>
+          <div>
+            <div className="mb-2 block">
+              <Label htmlFor="username-input">Username</Label>
+            </div>
+            <TextInput
+              id="username-input"
+              name="username"
+              required
+              type="text"
+              autoComplete="off"
+            />
+          </div>
+          <div>
+            <div className="mb-2 block">
+              <Label htmlFor="password-input">Password</Label>
+            </div>
+            <TextInput
+              id="password-input"
+              name="userPassword"
+              required
+              type="password"
+              autoComplete="off"
+            />
+          </div>
+          <Button type="submit">Create account</Button>
+        </form>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-cyan-600 hover:underline dark:text-cyan-500"
+          >
+            Sign in
+          </Link>
+        </p>
+      </Card>
+    </div>
   );
 }
