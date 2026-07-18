@@ -1,15 +1,7 @@
 import { useContext } from "react";
-import { Link, Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { AuthContext } from "../auth";
-import {
-  Button,
-  DarkThemeToggle,
-  Navbar,
-  NavbarBrand,
-  NavbarCollapse,
-  NavbarLink,
-  NavbarToggle,
-} from "flowbite-react";
+import { Button, DarkThemeToggle, Navbar, NavbarBrand } from "flowbite-react";
 
 export default function HomeLayout() {
   const { currentUser, setCurrentUser } = useContext(AuthContext);
@@ -24,7 +16,13 @@ export default function HomeLayout() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar fluid className="border-b border-gray-200 dark:border-gray-700">
-        <NavbarBrand as={Link} href="/">
+        <NavbarBrand
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/");
+          }}
+        >
           <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
             CreateYourStory.ai
           </span>
@@ -45,13 +43,7 @@ export default function HomeLayout() {
               </Button>
             </>
           )}
-          <NavbarToggle />
         </div>
-        <NavbarCollapse>
-          <NavbarLink as={Link} href="/" active>
-            Home
-          </NavbarLink>
-        </NavbarCollapse>
       </Navbar>
 
       <main className="mx-auto max-w-4xl px-4 py-8">
