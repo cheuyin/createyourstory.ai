@@ -17,7 +17,7 @@ class ImageGenerator:
         BODY = {
             "model": "x-ai/grok-imagine-image-quality",
             "prompt": prompt,
-            "aspect_ratio": "3:2",
+            "aspect_ratio": "2:3",
             "resolution": "1K",
             "output_format": "jpeg",
         }

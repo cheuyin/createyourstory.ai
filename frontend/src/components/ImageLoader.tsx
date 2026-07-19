@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CompleteStoryPublic, ImageJobPublic } from "../types";
 import { BASE_URL } from "../api";
+import { Alert, Spinner } from "flowbite-react";
 
 interface ImageLoaderProps {
   story: CompleteStoryPublic;
@@ -47,27 +48,52 @@ function ImageLoader({ story }: ImageLoaderProps) {
   });
 
   if (!imagePoll.error && !isImageJobCompleted) {
-    return <p>Image is being created...</p>;
+    return (
+      <div className="mt-5 flex aspect-[2/3] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/40 px-6 dark:border-gray-600 dark:bg-gray-800/40">
+        <Spinner size="lg" color="warning" aria-label="Generating image" />
+        <p className="mt-4 font-medium text-gray-700 dark:text-gray-200">
+          Illustrating your story…
+        </p>
+        <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
+          The image usually takes a few seconds to paint.
+        </p>
+      </div>
+    );
   }
 
   if (imagePoll.error) {
     return (
-      <p>
-        {imagePoll.error.name} {imagePoll.error.message}
-      </p>
+      <Alert color="failure" className="mt-5">
+        {imagePoll.error.name}: {imagePoll.error.message}
+      </Alert>
     );
   }
 
   if (imageQuery.isPending) {
-    return <p>Loading image...</p>;
+    return (
+      <div className="mt-5 flex aspect-[2/3] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/40 px-6 dark:border-gray-600 dark:bg-gray-800/40">
+        <Spinner size="lg" color="warning" aria-label="Loading image" />
+        <p className="mt-4 font-medium text-gray-700 dark:text-gray-200">
+          Loading illustration…
+        </p>
+      </div>
+    );
   }
 
   if (imageQuery.error) {
-    return <p>Couldn't load image: {imageQuery.error.message}</p>;
+    return (
+      <Alert color="failure" className="mt-5">
+        Couldn&apos;t load image: {imageQuery.error.message}
+      </Alert>
+    );
   }
 
   return (
-    <img src={`data:image/jpeg;base64,${imageQuery.data.image_base_64}`} />
+    <img
+      src={`data:image/jpeg;base64,${imageQuery.data.image_base_64}`}
+      alt="Story cover illustration"
+      className="mt-5 aspect-[2/3] w-full rounded-xl object-cover shadow-lg"
+    />
   );
 }
 

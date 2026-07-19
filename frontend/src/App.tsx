@@ -1,4 +1,3 @@
-import "./App.css";
 import { Routes, Route } from "react-router";
 import StoryLoader from "./components/StoryLoader";
 import StoryGenerator from "./components/StoryGenerator";
@@ -74,33 +73,41 @@ function App() {
 
   return (
     <AuthContext value={{ currentUser, setCurrentUser }}>
-      <div className="app-container">
-        <header>
-          <h1>CreateYourStory.ai</h1>
-        </header>
-        <main>
-          <Routes>
-            <Route element={<HomeLayout />}>
-              <Route
-                path={"/"}
-                element={
-                  <div className="story-generator">
-                    <StoryGenerator />
-                    {currentUser ? (
-                      <StoryList />
-                    ) : (
-                      <p>Sign in to view saved stories</p>
-                    )}
-                  </div>
-                }
-              />
-            </Route>
-            <Route path={"/signup"} element={<SignupPage />} />
-            <Route path={"/login"} element={<LoginPage />} />
-            <Route path={"/story/:id"} element={<StoryLoader />} />
-          </Routes>
-        </main>
-      </div>
+      <Routes>
+        <Route element={<HomeLayout />}>
+          <Route
+            path={"/"}
+            element={
+              <div className="mx-auto max-w-4xl">
+                <div className="mb-10 text-center">
+                  <h1 className="mb-3 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+                    What story will you{" "}
+                    <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                      tell today
+                    </span>
+                    ?
+                  </h1>
+                  <p className="mx-auto max-w-xl text-lg text-gray-500 dark:text-gray-400">
+                    Turn any idea into an interactive adventure in seconds.
+                    Choose a theme, pick a model, and let AI craft your story.
+                  </p>
+                </div>
+                <StoryGenerator />
+                {currentUser ? (
+                  <StoryList />
+                ) : (
+                  <p className="mt-8 text-center text-gray-500 dark:text-gray-400">
+                    Sign in to view saved stories
+                  </p>
+                )}
+              </div>
+            }
+          />
+          <Route path={"/signup"} element={<SignupPage />} />
+          <Route path={"/login"} element={<LoginPage />} />
+          <Route path={"/story/:id"} element={<StoryLoader />} />
+        </Route>
+      </Routes>
     </AuthContext>
   );
 }
