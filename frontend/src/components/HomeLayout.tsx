@@ -35,9 +35,14 @@ export default function HomeLayout() {
         <div className="flex items-center gap-2 md:order-2">
           <DarkThemeToggle />
           {currentUser ? (
-            <Button size="sm" color="gray" onClick={handleLogout}>
-              Log out
-            </Button>
+            <>
+              <span className="hidden text-sm text-gray-600 sm:inline dark:text-gray-400">
+                Hi, {currentUser.fullName.split(" ")[0]}
+              </span>
+              <Button size="sm" color="gray" onClick={handleLogout}>
+                Log out
+              </Button>
+            </>
           ) : (
             <>
               <Button size="sm" color="gray" onClick={() => navigate("/login")}>
@@ -56,11 +61,6 @@ export default function HomeLayout() {
       </Navbar>
 
       <main className="mx-auto max-w-4xl px-4 py-8">
-        {currentUser && (
-          <p className="mb-6 text-gray-600 dark:text-gray-400">
-            Welcome back, {currentUser.fullName}!
-          </p>
-        )}
         <Outlet />
       </main>
     </div>
