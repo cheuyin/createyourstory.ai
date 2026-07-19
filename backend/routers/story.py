@@ -134,16 +134,11 @@ def get_complete_story(story_id: int, db: SessionDep, user: Annotated[User | Non
     return complete_story
 
 
-@router.get("/", response_model=list[CompleteStoryPublic])
+@router.get("", response_model=list[CompleteStoryPublic])
 def get_all_stories(db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]):
     query = select(Story).where(Story.user_id == user.id)
     stories = db.exec(statement=query).all()
-
-    def func(story: Story):
-        return build_complete_story_tree(db, story)
-
-    stories = map(func, stories)
-    return stories
+    return [build_complete_story_tree(db, story) for story in stories]
 
 
 def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
