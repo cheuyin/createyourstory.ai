@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CompleteStoryNodePublic, CompleteStoryPublic } from "../types";
-import { Badge, Button, Card } from "flowbite-react";
+import { Button } from "flowbite-react";
 
 interface StoryGameProps {
   story: CompleteStoryPublic;
@@ -26,23 +26,7 @@ function StoryGame({ story, onNewStory }: StoryGameProps) {
   };
 
   return (
-    <Card>
-      <div className="text-center">
-        <h2 className="font-serif text-3xl font-bold text-gray-900 dark:text-white">
-          {story.title}
-        </h2>
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
-          <Badge color="gray">{story.ai_model}</Badge>
-          <Badge color="success">{story.num_words} words</Badge>
-          <Badge color="indigo">{story.num_endings} endings</Badge>
-          <Badge color="yellow">
-            {story.num_winning_endings} winning endings
-          </Badge>
-        </div>
-      </div>
-
-      <hr className="my-6 border-gray-200 dark:border-gray-700" />
-
+    <div>
       {currentNode && (
         <div>
           <p className="font-serif text-lg leading-loose text-gray-800 dark:text-gray-200">
@@ -112,7 +96,7 @@ function StoryGame({ story, onNewStory }: StoryGameProps) {
           </Button>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 

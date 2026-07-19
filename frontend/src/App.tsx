@@ -78,7 +78,7 @@ function App() {
           <Route
             path={"/"}
             element={
-              <>
+              <div className="mx-auto max-w-4xl">
                 <div className="mb-10 text-center">
                   <h1 className="mb-3 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
                     What story will you{" "}
@@ -100,7 +100,7 @@ function App() {
                     Sign in to view saved stories
                   </p>
                 )}
-              </>
+              </div>
             }
           />
           <Route path={"/signup"} element={<SignupPage />} />
