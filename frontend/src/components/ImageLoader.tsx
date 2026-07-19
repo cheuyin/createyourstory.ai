@@ -49,11 +49,16 @@ function ImageLoader({ story }: ImageLoaderProps) {
 
   if (!imagePoll.error && !isImageJobCompleted) {
     return (
-      <Card className="mt-6 flex flex-col items-center py-8">
-        <Spinner size="lg" aria-label="Generating image" />
-        <p className="mt-3 text-gray-500 dark:text-gray-400">
-          Image is being created...
-        </p>
+      <Card className="mt-6">
+        <div className="flex flex-col items-center rounded-lg border-2 border-dashed border-amber-200 bg-amber-50/40 px-6 py-10 dark:border-gray-600 dark:bg-gray-800/40">
+          <Spinner size="lg" color="warning" aria-label="Generating image" />
+          <p className="mt-4 font-medium text-gray-700 dark:text-gray-200">
+            Illustrating your story…
+          </p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            The image usually takes a few seconds to paint.
+          </p>
+        </div>
       </Card>
     );
   }
@@ -68,11 +73,13 @@ function ImageLoader({ story }: ImageLoaderProps) {
 
   if (imageQuery.isPending) {
     return (
-      <Card className="mt-6 flex flex-col items-center py-8">
-        <Spinner size="lg" aria-label="Loading image" />
-        <p className="mt-3 text-gray-500 dark:text-gray-400">
-          Loading image...
-        </p>
+      <Card className="mt-6">
+        <div className="flex flex-col items-center rounded-lg border-2 border-dashed border-amber-200 bg-amber-50/40 px-6 py-10 dark:border-gray-600 dark:bg-gray-800/40">
+          <Spinner size="lg" color="warning" aria-label="Loading image" />
+          <p className="mt-4 font-medium text-gray-700 dark:text-gray-200">
+            Loading illustration…
+          </p>
+        </div>
       </Card>
     );
   }
