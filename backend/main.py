@@ -143,7 +143,7 @@ if FRONTEND_DIR.exists():
     @app.get("/{catchall:path}")
     async def serve_frontend(catchall: str):
         if catchall.startswith("api") or catchall.startswith("docs") or catchall.startswith("redoc") or catchall.startswith("openapi.json"):
-            return JSONResponse(status_code=404, content={"detail": "Not found"})
+            return JSONResponse(status_code=404, content={"error": "Not found", "message": "Page not found"})
         file_path = FRONTEND_DIR / catchall
         if file_path.is_file():
             return FileResponse(file_path)
@@ -151,4 +151,4 @@ if FRONTEND_DIR.exists():
 else:
     @app.get("/")
     def hello():
-        return {"message": "Hello! Frontend build not found. Run frontend dev server or build frontend."}
+        return {"error": "Frontend not found", "message": "Hello! Frontend build not found. Run frontend dev server or build frontend."}
