@@ -17,4 +17,13 @@ export const appTheme = createTheme({
       base: "flex rounded-lg border border-primary-200/60 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800",
     },
   },
+  button: {
+    color: {
+      // flowbite-react 0.12 renamed the Button's brand color from "primary"
+      // to "default". Alias it so existing color="primary" call sites keep
+      // working. Styles mirror the default theme's "default" entry.
+      primary:
+        "bg-primary-700 text-white hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800",
+    },
+  },
 });
