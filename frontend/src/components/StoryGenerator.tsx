@@ -5,6 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import CreateStoryForm from "./CreateStoryForm";
 import LoadingStatus from "./LoadingStatus";
 import { BASE_URL } from "../api";
+import { Alert, Button, Spinner } from "flowbite-react";
 
 export default function StoryGenerator() {
   const navigate = useNavigate();
@@ -83,23 +84,34 @@ export default function StoryGenerator() {
 
   if (mutation.isError) {
     return (
-      <div className="error-message">
-        <p>{mutation.error.message}</p>
-        <button onClick={handleTryAgain}>Try Again</button>
-      </div>
+      <Alert color="failure">
+        <p className="mb-3">{mutation.error.message}</p>
+        <Button size="sm" color="failure" onClick={handleTryAgain}>
+          Try Again
+        </Button>
+      </Alert>
     );
   }
 
   if (job && !isJobFetchingCompleted && !job_poll.isError) {
-    return <p>Please wait while your story is being created...</p>;
+    return (
+      <div className="flex flex-col items-center py-12">
+        <Spinner size="xl" aria-label="Creating story" />
+        <p className="mt-4 text-gray-500 dark:text-gray-400">
+          Please wait while your story is being created...
+        </p>
+      </div>
+    );
   }
 
   if (job_poll.isError) {
     return (
-      <div className="error-message">
-        <p>{job_poll.error.message}</p>
-        <button onClick={handleTryAgain}>Try Again</button>
-      </div>
+      <Alert color="failure">
+        <p className="mb-3">{job_poll.error.message}</p>
+        <Button size="sm" color="failure" onClick={handleTryAgain}>
+          Try Again
+        </Button>
+      </Alert>
     );
   }
 

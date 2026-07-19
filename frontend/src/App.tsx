@@ -79,11 +79,24 @@ function App() {
             path={"/"}
             element={
               <>
+                <div className="mb-10 text-center">
+                  <h1 className="mb-3 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+                    What story will you{" "}
+                    <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                      tell today
+                    </span>
+                    ?
+                  </h1>
+                  <p className="mx-auto max-w-xl text-lg text-gray-500 dark:text-gray-400">
+                    Turn any idea into an interactive adventure in seconds.
+                    Choose a theme, pick a model, and let AI craft your story.
+                  </p>
+                </div>
                 <StoryGenerator />
                 {currentUser ? (
                   <StoryList />
                 ) : (
-                  <p className="mt-6 text-center text-gray-500 dark:text-gray-400">
+                  <p className="mt-8 text-center text-gray-500 dark:text-gray-400">
                     Sign in to view saved stories
                   </p>
                 )}

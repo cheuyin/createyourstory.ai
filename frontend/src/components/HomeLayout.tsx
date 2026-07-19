@@ -14,8 +14,8 @@ export default function HomeLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar fluid className="border-b border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen bg-gradient-to-b from-amber-50/60 to-white dark:from-gray-900 dark:to-gray-950">
+      <Navbar fluid className="border-b border-amber-200/50 bg-transparent dark:border-gray-700/50">
         <NavbarBrand
           href="/"
           onClick={(e) => {
@@ -23,8 +23,10 @@ export default function HomeLayout() {
             navigate("/");
           }}
         >
-          <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
-            CreateYourStory.ai
+          <span className="mr-2 text-2xl">📖</span>
+          <span className="self-center text-xl font-bold tracking-tight whitespace-nowrap text-gray-900 dark:text-white">
+            CreateYourStory
+            <span className="text-amber-500">.ai</span>
           </span>
         </NavbarBrand>
         <div className="flex items-center gap-2 md:order-2">
@@ -38,7 +40,11 @@ export default function HomeLayout() {
               <Button size="sm" color="gray" onClick={() => navigate("/login")}>
                 Sign in
               </Button>
-              <Button size="sm" onClick={() => navigate("/signup")}>
+              <Button
+                size="sm"
+                color="primary"
+                onClick={() => navigate("/signup")}
+              >
                 Sign up
               </Button>
             </>
