@@ -8,7 +8,7 @@ export default function HomeLayout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("accessToken");
     setCurrentUser(null);
     navigate("/");
   };
