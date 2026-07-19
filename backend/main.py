@@ -1,14 +1,10 @@
-from typing import Annotated
-
-from fastapi import Depends, FastAPI, Request, status
+from fastapi import FastAPI, Request, status
+from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
-
+from pathlib import Path
 from routers import auth
-from routers.auth import get_user_from_token
-from models.auth import User
 from exceptions.exceptions import *
 from core.config import settings
 from routers import story, job
@@ -22,14 +18,6 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc"
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"]
 )
 
 
@@ -141,11 +129,26 @@ async def http_exception_handler(request, exc: StarletteHTTPException):
                  "message": "Something went wrong"})
 
 
-@app.get("/")
-def hello():
-    return {"message": "Hello!"}
-
-
 app.include_router(story.router, prefix=settings.API_PREFIX)
 app.include_router(job.router, prefix=settings.API_PREFIX)
 app.include_router(auth.router, prefix=settings.API_PREFIX)
+
+
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+
+if FRONTEND_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIR /
+              "assets"), name="assets")
+
+    @app.get("/{catchall:path}")
+    async def serve_frontend(catchall: str):
+        if catchall.startswith("api") or catchall.startswith("docs") or catchall.startswith("redoc") or catchall.startswith("openapi.json"):
+            return JSONResponse(status_code=404, content={"detail": "Not found"})
+        file_path = FRONTEND_DIR / catchall
+        if file_path.is_file():
+            return FileResponse(file_path)
+        return FileResponse(FRONTEND_DIR / "index.html")
+else:
+    @app.get("/")
+    def hello():
+        return {"message": "Hello! Frontend build not found. Run frontend dev server or build frontend."}
