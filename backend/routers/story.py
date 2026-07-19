@@ -139,8 +139,6 @@ def get_all_stories(db: SessionDep, user: Annotated[User, Depends(get_user_from_
     query = select(Story).where(Story.user_id == user.id)
     stories = db.exec(statement=query).all()
 
-    print("STORIES", stories)
-
     def func(story: Story):
         return build_complete_story_tree(db, story)
 
