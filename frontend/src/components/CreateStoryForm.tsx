@@ -82,7 +82,9 @@ function CreateStoryForm({ onSubmit }: CreateStoryFormProps) {
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
           >
-            {showAdvanced ? "▾ Hide model settings" : "▸ Advanced: choose model"}
+            {showAdvanced
+              ? "▾ Hide model settings"
+              : "▸ Advanced: choose model"}
           </button>
           {showAdvanced && (
             <div className="mt-2">

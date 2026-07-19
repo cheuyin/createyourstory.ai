@@ -15,7 +15,10 @@ export default function HomeLayout() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50/60 to-white dark:from-gray-900 dark:to-gray-950">
-      <Navbar fluid className="border-b border-amber-200/50 bg-transparent dark:border-gray-700/50">
+      <Navbar
+        fluid
+        className="border-b border-amber-200/50 bg-transparent dark:border-gray-700/50"
+      >
         <NavbarBrand
           href="/"
           onClick={(e) => {

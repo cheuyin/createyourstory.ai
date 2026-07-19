@@ -67,9 +67,7 @@ function StoryGame({ story, onNewStory }: StoryGameProps) {
                     : "text-gray-700 dark:text-gray-300"
                 }`}
               >
-                {currentNode.is_winning_ending
-                  ? "Congratulations!"
-                  : "The End"}
+                {currentNode.is_winning_ending ? "Congratulations!" : "The End"}
               </h3>
               <p
                 className={`mt-1 ${
