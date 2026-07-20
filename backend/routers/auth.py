@@ -8,6 +8,7 @@ from sqlmodel import Session, select
 from db.database import get_db
 from models.auth import Token, TokenData, User, UserCreate, UserPublic
 from exceptions.exceptions import *
+from core.config import settings
 
 router = APIRouter(
     prefix="/auth",
@@ -20,7 +21,6 @@ SessionDep = Annotated[Session, Depends(get_db)]
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="api/auth/login", auto_error=False)
 
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -88,7 +88,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -105,7 +106,8 @@ def get_user_from_token(token: Annotated[str | None, Depends(oauth2_scheme)]) ->
     if not token:
         raise AuthenticationError()
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY,
+                             algorithms=[ALGORITHM])
         username = payload.get("sub")
         if username is None:
             raise AuthenticationError()
@@ -123,7 +125,8 @@ def get_optional_user_from_token(token: Annotated[str | None, Depends(oauth2_sch
     if not token:
         return None
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY,
+                             algorithms=[ALGORITHM])
         username = payload.get("sub")
         if username is None:
             raise AuthenticationError()
