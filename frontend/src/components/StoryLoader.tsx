@@ -2,9 +2,10 @@ import { useNavigate, useParams } from "react-router";
 import LoadingStatus from "./LoadingStatus";
 import { useQuery } from "@tanstack/react-query";
 import StoryGame from "./StoryGame";
-import { BASE_URL } from "../api";
+import { apiFetch, BASE_URL } from "../api";
 import ImageLoader from "./ImageLoader";
-import { Alert, Badge, Button } from "flowbite-react";
+import { Badge } from "flowbite-react";
+import ErrorAlert from "./ErrorAlert";
 
 function StoryLoader() {
   const { id } = useParams();
@@ -13,12 +14,7 @@ function StoryLoader() {
   const { isPending, error, data } = useQuery({
     queryKey: ["story", id],
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/api/stories/${id}`);
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(`${data.error}: ${data.message}`);
-      }
-      return data;
+      return apiFetch(`${BASE_URL}/api/stories/${id}`);
     },
     retry: false,
   });
@@ -33,12 +29,12 @@ function StoryLoader() {
 
   if (error) {
     return (
-      <Alert color="failure">
-        <p className="mb-3">{error.message}</p>
-        <Button size="sm" color="failure" onClick={createNewStory}>
-          Go to story generator
-        </Button>
-      </Alert>
+      <ErrorAlert
+        title="Couldn’t load this story"
+        message={error.message}
+        onRetry={createNewStory}
+        retryLabel="Go to story generator"
+      />
     );
   }
 
