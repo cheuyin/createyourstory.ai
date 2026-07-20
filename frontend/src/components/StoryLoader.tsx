@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router";
 import LoadingStatus from "./LoadingStatus";
 import { useQuery } from "@tanstack/react-query";
 import StoryGame from "./StoryGame";
-import { BASE_URL } from "../api";
+import { apiFetch, BASE_URL } from "../api";
 import ImageLoader from "./ImageLoader";
 import { Badge } from "flowbite-react";
 import ErrorAlert from "./ErrorAlert";
@@ -14,12 +14,7 @@ function StoryLoader() {
   const { isPending, error, data } = useQuery({
     queryKey: ["story", id],
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/api/stories/${id}`);
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(`${data.error}: ${data.message}`);
-      }
-      return data;
+      return apiFetch(`${BASE_URL}/api/stories/${id}`);
     },
     retry: false,
   });

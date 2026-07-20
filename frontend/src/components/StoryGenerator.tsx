@@ -4,7 +4,7 @@ import type { StoryJobCreate, StoryJobPublic } from "../types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import CreateStoryForm from "./CreateStoryForm";
 import LoadingStatus from "./LoadingStatus";
-import { BASE_URL } from "../api";
+import { apiFetch, BASE_URL } from "../api";
 import { Spinner } from "flowbite-react";
 import ErrorAlert from "./ErrorAlert";
 
@@ -19,13 +19,9 @@ export default function StoryGenerator() {
       if (!job) {
         return null;
       }
-      const response = await fetch(
+      const data = await apiFetch<StoryJobPublic>(
         `${BASE_URL}/api/jobs/stories/${job.job_id}`,
       );
-      const data = await response.json();
-      if (!response.ok) {
-        throw Error(`${data.error}: ${data.message}`);
-      }
       setJob(data);
       return data;
     },
@@ -39,18 +35,13 @@ export default function StoryGenerator() {
 
   const mutation = useMutation({
     mutationFn: async (newStory: StoryJobCreate) => {
-      const response = await fetch(`${BASE_URL}/api/stories/create`, {
+      return apiFetch<StoryJobPublic>(`${BASE_URL}/api/stories/create`, {
         method: "POST",
         body: JSON.stringify(newStory),
         headers: {
           "Content-Type": "application/json",
         },
       });
-      const data = await response.json();
-      if (!response.ok) {
-        throw Error(`${data.error}: ${data.message}`);
-      }
-      return data;
     },
     onSuccess: async (data) => {
       const job = await data;

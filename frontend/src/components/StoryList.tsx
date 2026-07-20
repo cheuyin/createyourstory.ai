@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BASE_URL } from "../api";
+import { apiFetch, BASE_URL } from "../api";
 import type { CompleteStoryPublic } from "../types";
 import { Card, Spinner } from "flowbite-react";
 import { useNavigate } from "react-router";
@@ -32,25 +32,16 @@ export default function StoryList() {
   const { isPending, isError, data, error } = useQuery({
     queryKey: ["story_list"],
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/api/stories`);
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(`${data.error}: ${data.message}`);
-      }
-      return data;
+      return apiFetch<CompleteStoryPublic[]>(`${BASE_URL}/api/stories`);
     },
     retry: 1,
   });
 
   const mutation = useMutation({
     mutationFn: async (story_id: number) => {
-      const response = await fetch(`${BASE_URL}/api/stories/${story_id}`, {
+      await apiFetch<null>(`${BASE_URL}/api/stories/${story_id}`, {
         method: "DELETE",
       });
-      const data = await response.json();
-      if (!response.ok) {
-        throw Error(`${data.error}: ${data.message}`);
-      }
       return null;
     },
     onSuccess: async () => {
@@ -69,7 +60,10 @@ export default function StoryList() {
   if (isError) {
     return (
       <Card className="mt-6">
-        <ErrorAlert title="Couldn’t load saved stories" message={error.message} />
+        <ErrorAlert
+          title="Couldn’t load saved stories"
+          message={error.message}
+        />
       </Card>
     );
   }
