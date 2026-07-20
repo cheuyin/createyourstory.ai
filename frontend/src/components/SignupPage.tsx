@@ -1,49 +1,53 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { BASE_URL } from "../api";
 import { AuthContext } from "../auth";
 import { Link, useNavigate } from "react-router";
 import { Button, Card, Label, TextInput } from "flowbite-react";
+import ErrorAlert from "./ErrorAlert";
 
 export default function SignupPage() {
   const { setCurrentUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.SubmitEvent) {
     event.preventDefault();
+    setError(null);
 
-    const formElement = event.target;
-    const formData = new FormData(formElement);
-
-    const response = await fetch(`${BASE_URL}/api/auth/signup`, {
-      method: "POST",
-      body: JSON.stringify({
-        full_name: formData.get("full_name"),
-        username: formData.get("username"),
-        password: formData.get("userPassword"),
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      alert(data.error);
-      return;
+    try {
+      const formData = new FormData(event.target);
+      const response = await fetch(`${BASE_URL}/api/auth/signup`, {
+        method: "POST",
+        body: JSON.stringify({
+          full_name: formData.get("full_name"),
+          username: formData.get("username"),
+          password: formData.get("userPassword"),
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Sign up failed. Please check your details.");
+        return;
+      }
+      localStorage.setItem("accessToken", data.access_token);
+      const userResponse = await fetch(`${BASE_URL}/api/auth/users/me`);
+      const userData = await userResponse.json();
+      if (!userResponse.ok) {
+        localStorage.removeItem("accessToken");
+        setError(userData.error || "We couldn’t load your account.");
+        return;
+      }
+      setCurrentUser({
+        fullName: userData.full_name,
+        username: userData.username,
+      });
+      navigate("/");
+    } catch {
+      setError("We couldn’t reach the server. Please try again.");
     }
-    const { access_token } = data;
-    localStorage.setItem("accessToken", access_token);
-    const user_response = await fetch(`${BASE_URL}/api/auth/users/me`);
-    const user_data = await user_response.json();
-    if (!user_response.ok) {
-      alert(user_data.error);
-      return;
-    }
-    setCurrentUser({
-      fullName: user_data.full_name,
-      username: user_data.username,
-    });
-    navigate("/");
   }
 
   return (
@@ -52,6 +56,7 @@ export default function SignupPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Create an account
         </h1>
+        {error && <ErrorAlert message={error} />}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <div className="mb-2 block">

@@ -9,9 +9,11 @@ import type { UserPublic } from "./types";
 import { BASE_URL } from "./api";
 import HomeLayout from "./components/HomeLayout";
 import LoginPage from "./components/LoginPage";
+import ErrorAlert from "./components/ErrorAlert";
 
 function App() {
   const [currentUser, setCurrentUser] = useState<UserPublic | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useLayoutEffect(() => {
     const originalFetch = window.fetch;
@@ -54,18 +56,24 @@ function App() {
     const fetchUser = async () => {
       const accessToken = localStorage.getItem("accessToken");
       if (accessToken) {
-        const user_response = await fetch(`${BASE_URL}/api/auth/users/me`);
-        const user_data = await user_response.json();
-        if (!user_response.ok) {
-          alert(user_data.error);
+        try {
+          const userResponse = await fetch(`${BASE_URL}/api/auth/users/me`);
+          const userData = await userResponse.json();
+          if (!userResponse.ok) {
+            setAuthError(userData.error || "Your session has expired. Please sign in again.");
+            localStorage.removeItem("accessToken");
+            setCurrentUser(null);
+            return;
+          }
+          setCurrentUser({
+            fullName: userData.full_name,
+            username: userData.username,
+          });
+        } catch {
+          setAuthError("We couldn’t verify your session. Please try again.");
           localStorage.removeItem("accessToken");
           setCurrentUser(null);
-          return;
         }
-        setCurrentUser({
-          fullName: user_data.full_name,
-          username: user_data.username,
-        });
       }
     };
     fetchUser();
@@ -73,6 +81,11 @@ function App() {
 
   return (
     <AuthContext value={{ currentUser, setCurrentUser }}>
+      {authError && (
+        <div className="mx-auto max-w-4xl px-4 pt-4">
+          <ErrorAlert message={authError} />
+        </div>
+      )}
       <Routes>
         <Route element={<HomeLayout />}>
           <Route
