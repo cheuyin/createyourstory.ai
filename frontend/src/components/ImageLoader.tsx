@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import type { CompleteStoryPublic, ImageJobPublic } from "../types";
 import { BASE_URL } from "../api";
-import { Alert, Spinner } from "flowbite-react";
+import { Spinner } from "flowbite-react";
+import ErrorAlert from "./ErrorAlert";
 
 interface ImageLoaderProps {
   story: CompleteStoryPublic;
@@ -63,9 +64,11 @@ function ImageLoader({ story }: ImageLoaderProps) {
 
   if (imagePoll.error) {
     return (
-      <Alert color="failure" className="mt-5">
-        {imagePoll.error.name}: {imagePoll.error.message}
-      </Alert>
+      <ErrorAlert
+        className="mt-5"
+        title="Couldn’t generate the illustration"
+        message={imagePoll.error.message}
+      />
     );
   }
 
@@ -82,9 +85,11 @@ function ImageLoader({ story }: ImageLoaderProps) {
 
   if (imageQuery.error) {
     return (
-      <Alert color="failure" className="mt-5">
-        Couldn&apos;t load image: {imageQuery.error.message}
-      </Alert>
+      <ErrorAlert
+        className="mt-5"
+        title="Couldn’t load the illustration"
+        message={imageQuery.error.message}
+      />
     );
   }
 

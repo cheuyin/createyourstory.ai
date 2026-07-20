@@ -3,6 +3,7 @@ import { BASE_URL } from "../api";
 import type { CompleteStoryPublic } from "../types";
 import { Card, Spinner } from "flowbite-react";
 import { useNavigate } from "react-router";
+import ErrorAlert from "./ErrorAlert";
 
 function formatRelativeDate(value: string | Date): string {
   const date = new Date(value);
@@ -68,13 +69,9 @@ export default function StoryList() {
   if (isError) {
     return (
       <Card className="mt-6">
-        <p className="text-red-600 dark:text-red-400">{error.message}</p>
+        <ErrorAlert title="Couldn’t load saved stories" message={error.message} />
       </Card>
     );
-  }
-
-  if (mutation.isError) {
-    alert(mutation.error.message);
   }
 
   const handleClick = (story: CompleteStoryPublic) => {
@@ -141,6 +138,18 @@ export default function StoryList() {
             </li>
           ))}
         </ul>
+      )}
+      {mutation.isError && (
+        <ErrorAlert
+          className="mt-4"
+          title="Couldn’t delete the story"
+          message={mutation.error.message}
+          onRetry={() => {
+            if (mutation.variables !== undefined) {
+              mutation.mutate(mutation.variables);
+            }
+          }}
+        />
       )}
     </Card>
   );

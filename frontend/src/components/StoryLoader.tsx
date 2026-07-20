@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import StoryGame from "./StoryGame";
 import { BASE_URL } from "../api";
 import ImageLoader from "./ImageLoader";
-import { Alert, Badge, Button } from "flowbite-react";
+import { Badge } from "flowbite-react";
+import ErrorAlert from "./ErrorAlert";
 
 function StoryLoader() {
   const { id } = useParams();
@@ -33,12 +34,12 @@ function StoryLoader() {
 
   if (error) {
     return (
-      <Alert color="failure">
-        <p className="mb-3">{error.message}</p>
-        <Button size="sm" color="failure" onClick={createNewStory}>
-          Go to story generator
-        </Button>
-      </Alert>
+      <ErrorAlert
+        title="Couldn’t load this story"
+        message={error.message}
+        onRetry={createNewStory}
+        retryLabel="Go to story generator"
+      />
     );
   }
 

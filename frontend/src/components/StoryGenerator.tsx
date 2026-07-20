@@ -5,7 +5,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import CreateStoryForm from "./CreateStoryForm";
 import LoadingStatus from "./LoadingStatus";
 import { BASE_URL } from "../api";
-import { Alert, Button, Spinner } from "flowbite-react";
+import { Spinner } from "flowbite-react";
+import ErrorAlert from "./ErrorAlert";
 
 export default function StoryGenerator() {
   const navigate = useNavigate();
@@ -84,12 +85,7 @@ export default function StoryGenerator() {
 
   if (mutation.isError) {
     return (
-      <Alert color="failure">
-        <p className="mb-3">{mutation.error.message}</p>
-        <Button size="sm" color="failure" onClick={handleTryAgain}>
-          Try Again
-        </Button>
-      </Alert>
+      <ErrorAlert message={mutation.error.message} onRetry={handleTryAgain} />
     );
   }
 
@@ -106,12 +102,7 @@ export default function StoryGenerator() {
 
   if (job_poll.isError) {
     return (
-      <Alert color="failure">
-        <p className="mb-3">{job_poll.error.message}</p>
-        <Button size="sm" color="failure" onClick={handleTryAgain}>
-          Try Again
-        </Button>
-      </Alert>
+      <ErrorAlert message={job_poll.error.message} onRetry={handleTryAgain} />
     );
   }
 
