@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     DATABASE_URL: str = ""
     OPENROUTER_API_KEY: str = ""
+    JWT_SECRET_KEY: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
