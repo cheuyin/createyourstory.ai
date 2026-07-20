@@ -166,4 +166,4 @@ The repository includes a build script that installs frontend dependencies, buil
 
 ## License
 
-This project is currently a personal portfolio project.
+This project is licensed under the [MIT License](LICENSE).
