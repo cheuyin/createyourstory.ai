@@ -6,6 +6,7 @@ import { apiFetch, BASE_URL } from "../api";
 import ImageLoader from "./ImageLoader";
 import { Badge } from "flowbite-react";
 import ErrorAlert from "./ErrorAlert";
+import type { CompleteStoryPublic } from "../types";
 
 function StoryLoader() {
   const { id } = useParams();
@@ -14,7 +15,7 @@ function StoryLoader() {
   const { isPending, error, data } = useQuery({
     queryKey: ["story", id],
     queryFn: async () => {
-      return apiFetch(`${BASE_URL}/api/stories/${id}`);
+      return apiFetch<CompleteStoryPublic>(`${BASE_URL}/api/stories/${id}`);
     },
     retry: false,
   });
