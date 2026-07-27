@@ -9,9 +9,6 @@ from core.config import settings
 from exceptions.exceptions import AuthenticationError
 from models.auth import Token, User, UserCreate
 
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
 password_hash = PasswordHash.recommended()
 
 
@@ -30,7 +27,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
 def authenticate_user(db: Session, username: str, password: str) -> User | None:
@@ -42,19 +40,22 @@ def authenticate_user(db: Session, username: str, password: str) -> User | None:
     return user
 
 
-def login_user(db: Session, username: str, password: str) -> Token:
-    user = authenticate_user(db, username, password)
-    if not user:
-        raise AuthenticationError()
-
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+def _issue_token(username: str) -> Token:
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": username}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 
 
-def signup_user(db: Session, data: UserCreate) -> str:
+def login_user(db: Session, username: str, password: str) -> Token:
+    user = authenticate_user(db, username, password)
+    if not user:
+        raise AuthenticationError()
+    return _issue_token(user.username)
+
+
+def signup_user(db: Session, data: UserCreate) -> Token:
     if get_user_by_username(db, data.username):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "User already exists")
 
@@ -66,8 +67,4 @@ def signup_user(db: Session, data: UserCreate) -> str:
     db.add(user)
     db.commit()
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    return create_access_token(
-        data={"sub": user.username},
-        expires_delta=access_token_expires,
-    )
+    return _issue_token(user.username)

@@ -9,7 +9,6 @@ from db.database import SessionDep
 from exceptions.exceptions import AuthenticationError
 from models.auth import User
 from services import auth as auth_service
-from services.auth import ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="api/auth/login", auto_error=False)
@@ -18,7 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 def _decode_token_username(token: str) -> str:
     try:
         payload = jwt.decode(
-            token, settings.JWT_SECRET_KEY, algorithms=[ALGORITHM])
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         username = payload.get("sub")
         if username is None:
             raise AuthenticationError()
