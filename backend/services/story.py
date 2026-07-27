@@ -2,7 +2,11 @@ import json
 
 from sqlmodel import Session, select
 
-from exceptions.exceptions import StoryRootNotFoundError
+from exceptions.exceptions import (
+    AuthorizationError,
+    StoryNotFoundError,
+    StoryRootNotFoundError,
+)
 from models.auth import User
 from models.story import (
     CompleteStoryNodePublic,
@@ -76,3 +80,36 @@ def generate_story_stats(story: Story) -> None:
 
     story.num_endings = num_endings
     story.num_winning_endings = num_winning_endings
+
+
+def _get_story_by_id(db: Session, story_id: int) -> Story:
+    story = db.exec(select(Story).where(Story.id == story_id)).first()
+    if not story:
+        raise StoryNotFoundError()
+    return story
+
+
+def get_story(db: Session, story_id: int, user: User | None) -> CompleteStoryPublic:
+    story = _get_story_by_id(db, story_id)
+    if story.user_id is not None:
+        if not user:
+            raise AuthorizationError(
+                message="You cannot view other users' stories as a guest")
+        if story.user_id != user.id:
+            raise AuthorizationError(
+                message="You are not authorized to view this story")
+    return build_complete_story_tree(db, story)
+
+
+def list_stories(db: Session, user: User) -> list[CompleteStoryPublic]:
+    stories = db.exec(select(Story).where(Story.user_id == user.id)).all()
+    return [build_complete_story_tree(db, story) for story in stories]
+
+
+def delete_story(db: Session, story_id: int, user: User) -> None:
+    story = _get_story_by_id(db, story_id)
+    if story.user_id != user.id:
+        raise AuthorizationError(
+            message="You cannot delete stories you did not create")
+    db.delete(story)
+    db.commit()
