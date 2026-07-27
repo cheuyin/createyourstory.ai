@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks, statu
 from sqlmodel import Session, select
 import json
 
-from routers.auth import get_user_from_token, get_optional_user_from_token
+from dependencies.auth import get_user_from_token, get_optional_user_from_token
 from models.auth import User
 from exceptions.exceptions import *
 from models.story import CompleteStoryNodePublic, Story, StoryNode, StoryCreate, CompleteStoryPublic
