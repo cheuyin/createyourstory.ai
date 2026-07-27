@@ -1,0 +1,16 @@
+---
+description: Work in verifiable commit-ready chunks; one concern per step
+alwaysApply: true
+---
+
+# Incremental work
+
+When implementing or refactoring:
+
+1. **Plan in chunks** — Break work into steps where each step has one purpose and leaves the repo buildable/testable.
+2. **Finish one chunk before starting the next** — Do not mix unrelated concerns in the same edit pass.
+3. **Verify after each chunk** — Run relevant tests, lint, or smoke checks before proceeding.
+4. **Commit boundaries** — Treat each chunk as commit-ready, but only create commits when the user asks (or at an explicit checkpoint they approve).
+5. **Report progress** — After each chunk, briefly state what changed, verification result, and the next chunk.
+
+A chunk is too big if it needs "and also" in the summary or cannot be verified independently.
