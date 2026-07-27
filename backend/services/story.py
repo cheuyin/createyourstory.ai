@@ -4,7 +4,8 @@ from datetime import datetime
 
 from sqlmodel import Session, select
 
-from core.story_generator import StoryGenerator
+from core.models import StoryNodeLLM, StoryResponseLLM
+from core.story_generator import generate_story_response
 from db.database import engine
 from exceptions.exceptions import (
     AuthorizationError,
@@ -21,6 +22,7 @@ from models.story import (
     Story,
     StoryCreate,
     StoryNode,
+    StoryOption,
 )
 
 VALID_AI_MODELS = [
@@ -123,6 +125,69 @@ def delete_story(db: Session, story_id: int, user: User) -> None:
     db.commit()
 
 
+def _process_story_node(
+    db: Session,
+    story_id: int,
+    story: StoryResponseLLM,
+    curr_node_id: int,
+    is_root: bool = False,
+) -> StoryNode:
+    curr_node = story.allNodes[curr_node_id]
+    node = StoryNode(
+        story_id=story_id,
+        content=curr_node.content,
+        is_root=is_root,
+        is_ending=len(curr_node.options) == 0,
+        is_winning_ending=curr_node.isWinningEnding,
+    )
+    db.add(node)
+    db.flush()
+
+    if not node.is_ending:
+        options_raw_json_str_list: list[dict] = []
+        for option_id in curr_node.options:
+            StoryNodeLLM.model_validate(story.allNodes[option_id])
+            added_child = _process_story_node(
+                db, story_id, story, story.allNodes[option_id].id, False)
+            options_raw_json_str_list.append(StoryOption(**{
+                "text": story.allNodes[option_id].optionText,
+                "node_id": added_child.id,
+            }).model_dump(mode="json"))
+        node.options_raw_json_str = json.dumps(options_raw_json_str_list)
+
+    db.flush()
+    return node
+
+
+def persist_story_from_llm(
+    db: Session,
+    response: StoryResponseLLM,
+    session_id: str,
+    ai_model: str,
+    user_id: int | None,
+) -> Story:
+    try:
+        story = Story(
+            title=response.title,
+            session_id=session_id,
+            ai_model=ai_model,
+            image_base_64=None,
+            user_id=user_id,
+        )
+        db.add(story)
+        db.flush()
+        assert story.id
+
+        _process_story_node(
+            db, story.id, response, response.rootNodeId, is_root=True)
+
+        db.commit()
+        return story
+    except Exception:
+        db.rollback()
+        raise
+
+
 def create_story_job(
     db: Session,
     request: StoryCreate,
@@ -171,12 +236,13 @@ def run_story_generation(job_id: int) -> None:
             job.status = "processing"
             db.commit()
             db.refresh(job)
-            story = StoryGenerator.generate_story(
+            response = generate_story_response(job.theme, job.ai_model)
+            story = persist_story_from_llm(
                 db,
+                response,
                 job.session_id,
                 job.ai_model,
                 user_id=job.user_id if job.user_id else None,
-                theme=job.theme,
             )
             job.story_id = story.id
             generate_story_stats(story)
