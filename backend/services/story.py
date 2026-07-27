@@ -1,17 +1,24 @@
 import json
+import uuid
+from datetime import datetime
 
 from sqlmodel import Session, select
 
+from core.story_generator import StoryGenerator
+from db.database import engine
 from exceptions.exceptions import (
     AuthorizationError,
     StoryNotFoundError,
     StoryRootNotFoundError,
+    UnsupportedAIModelError,
 )
 from models.auth import User
+from models.job import StoryJob, StoryJobPublic
 from models.story import (
     CompleteStoryNodePublic,
     CompleteStoryPublic,
     Story,
+    StoryCreate,
     StoryNode,
 )
 
@@ -113,3 +120,70 @@ def delete_story(db: Session, story_id: int, user: User) -> None:
             message="You cannot delete stories you did not create")
     db.delete(story)
     db.commit()
+
+
+def create_story_job(
+    db: Session,
+    request: StoryCreate,
+    user: User | None,
+    session_id: str,
+) -> tuple[StoryJobPublic, int]:
+    if request.ai_model not in VALID_AI_MODELS:
+        raise UnsupportedAIModelError()
+
+    job_id = str(uuid.uuid4())
+    job = StoryJob(
+        job_id=job_id,
+        session_id=session_id,
+        ai_model=request.ai_model,
+        theme=request.theme,
+        status="pending",
+        user_id=user.id if user else None,
+    )
+
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+
+    assert job.id
+
+    job_public = StoryJobPublic(
+        story_id=None,
+        job_id=job_id,
+        username=user.username if user else None,
+        status="pending",
+        created_at=job.created_at,
+        completed_at=None,
+        ai_model=request.ai_model,
+        error=None,
+    )
+    return job_public, job.id
+
+
+def run_story_generation(job_id: int) -> None:
+    with Session(engine) as db:
+        job = None
+        try:
+            job = db.get(StoryJob, job_id)
+            assert job
+            job.status = "processing"
+            db.commit()
+            db.refresh(job)
+            story = StoryGenerator.generate_story(
+                db,
+                job.session_id,
+                job.ai_model,
+                user_id=job.user_id if job.user_id else None,
+                theme=job.theme,
+            )
+            job.story_id = story.id
+            generate_story_stats(story)
+            job.status = "completed"
+            job.completed_at = datetime.now()
+            db.commit()
+        except Exception as e:
+            if job:
+                job.status = "failed"
+                job.completed_at = datetime.now()
+                job.error = str(e)
+                db.commit()
