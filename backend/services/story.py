@@ -1,0 +1,78 @@
+import json
+
+from sqlmodel import Session, select
+
+from exceptions.exceptions import StoryRootNotFoundError
+from models.auth import User
+from models.story import (
+    CompleteStoryNodePublic,
+    CompleteStoryPublic,
+    Story,
+    StoryNode,
+)
+
+VALID_AI_MODELS = [
+    "google/gemini-3.5-flash",
+    "google/gemini-3.1-pro-preview",
+    "google/gemini-3.1-flash-lite",
+    "google/gemini-2.5-flash",
+    "google/gemini-2.5-pro",
+    "anthropic/claude-sonnet-4.5",
+    "x-ai/grok-4.5",
+]
+
+
+def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
+    statement = select(StoryNode).where(StoryNode.story_id == story.id)
+    nodes = db.exec(statement).all()
+    node_map = {}
+    for node in nodes:
+        assert node.id
+        node_response = CompleteStoryNodePublic(
+            id=node.id,
+            content=node.content,
+            is_ending=node.is_ending,
+            is_winning_ending=node.is_winning_ending,
+            options=json.loads(
+                node.options_raw_json_str) if node.options_raw_json_str else [])
+        node_map[node.id] = node_response
+    root_node = next((node for node in nodes if node.is_root), None)
+    if not root_node:
+        raise StoryRootNotFoundError()
+    assert story.id
+    user_query = select(User).where(User.id == story.user_id)
+    user = db.exec(user_query).first()
+    return CompleteStoryPublic(
+        id=story.id,
+        title=story.title,
+        session_id=story.session_id,
+        root_node=node_map[root_node.id],
+        ai_model=story.ai_model,
+        all_nodes=node_map,
+        num_endings=story.num_endings or -1,
+        num_winning_endings=story.num_winning_endings or -1,
+        num_words=story.num_words or -1,
+        created_at=story.created_at,
+        image_job_id=story.image_job.job_id if story.image_job else None,
+        image_base_64=story.image_base_64,
+        username=user.username if user else None,
+    )
+
+
+def generate_story_stats(story: Story) -> None:
+    total_words = 0
+    for node in story.nodes:
+        total_words += len(node.content.split())
+    story.num_words = total_words
+
+    num_endings = 0
+    num_winning_endings = 0
+
+    for node in story.nodes:
+        if node.is_ending:
+            num_endings += 1
+        if node.is_winning_ending:
+            num_winning_endings += 1
+
+    story.num_endings = num_endings
+    story.num_winning_endings = num_winning_endings
