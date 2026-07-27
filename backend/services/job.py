@@ -16,10 +16,26 @@ from models.auth import User
 from models.job import ImageJob, ImageJobPublic, StoryJob, StoryJobPublic
 from models.story import Story
 
+IMAGE_MODEL = "gemini-3.1-flash-image"
 
-def get_story_job_status(
-    db: Session, job_id: str
-) -> tuple[StoryJobPublic, str | None]:
+
+def create_image_job_for_story_job(db: Session, job: StoryJob) -> str:
+    assert job.story_id
+    image_job_id = str(uuid.uuid4())
+    image_job = ImageJob(
+        story_id=job.story_id,
+        job_id=image_job_id,
+        image_model=IMAGE_MODEL,
+        theme=job.theme,
+        status="processing",
+        user_id=job.user_id,
+    )
+    job.image_job_id = image_job_id
+    db.add(image_job)
+    return image_job_id
+
+
+def get_story_job_status(db: Session, job_id: str) -> StoryJobPublic:
     statement = select(StoryJob).where(StoryJob.job_id == job_id)
     job = db.exec(statement).first()
     if not job:
@@ -30,37 +46,17 @@ def get_story_job_status(
 
     user = db.get(User, job.user_id) if job.user_id else None
 
-    image_job_id = None
-    if job.status == "completed":
-        image_job_id = str(uuid.uuid4())
-        assert job.story_id
-        image_job = ImageJob(
-            story_id=job.story_id,
-            job_id=image_job_id,
-            image_model="gemini-3.1-flash-image",
-            theme=job.theme,
-            status="processing",
-            user_id=user.id if user else None,
-        )
-
-        job.image_job_id = image_job_id
-
-        db.add(image_job)
-        db.commit()
-
-    job_public = StoryJobPublic(
+    return StoryJobPublic(
         job_id=job.job_id,
         username=user.username if user else None,
         ai_model=job.ai_model,
         status=job.status,
-        image_job_id=image_job_id or None,
+        image_job_id=job.image_job_id,
         created_at=job.created_at,
         story_id=job.story_id,
         completed_at=job.completed_at,
         error=job.error,
     )
-
-    return job_public, image_job_id
 
 
 def get_image_job_status(db: Session, job_id: str) -> ImageJobPublic:

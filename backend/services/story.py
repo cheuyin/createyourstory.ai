@@ -14,6 +14,7 @@ from exceptions.exceptions import (
 )
 from models.auth import User
 from models.job import StoryJob, StoryJobPublic
+from services import job as job_service
 from models.story import (
     CompleteStoryNodePublic,
     CompleteStoryPublic,
@@ -161,6 +162,7 @@ def create_story_job(
 
 
 def run_story_generation(job_id: int) -> None:
+    image_job_id = None
     with Session(engine) as db:
         job = None
         try:
@@ -178,6 +180,7 @@ def run_story_generation(job_id: int) -> None:
             )
             job.story_id = story.id
             generate_story_stats(story)
+            image_job_id = job_service.create_image_job_for_story_job(db, job)
             job.status = "completed"
             job.completed_at = datetime.now()
             db.commit()
@@ -187,3 +190,6 @@ def run_story_generation(job_id: int) -> None:
                 job.completed_at = datetime.now()
                 job.error = str(e)
                 db.commit()
+
+    if image_job_id:
+        job_service.run_image_generation(image_job_id)
