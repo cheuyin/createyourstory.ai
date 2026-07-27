@@ -1,6 +1,7 @@
 from langchain_openrouter import ChatOpenRouter
 from pydantic import ValidationError
 
+from core.config import settings
 from core.models import StoryResponseLLM
 from core.prompts import STORY_PROMPT
 from exceptions.exceptions import InsufficientCreditsError, StoryResponseValidationError
@@ -9,6 +10,7 @@ from exceptions.exceptions import InsufficientCreditsError, StoryResponseValidat
 def _get_model(ai_model: str):
     return ChatOpenRouter(
         model=ai_model,
+        openrouter_api_key=settings.OPENROUTER_API_KEY,
         max_tokens=None,
         timeout=None,
         max_retries=2,
