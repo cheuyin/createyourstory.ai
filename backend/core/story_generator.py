@@ -2,7 +2,7 @@ from langchain_openrouter import ChatOpenRouter
 from pydantic import ValidationError
 
 from core.config import settings
-from core.models import StoryResponseLLM
+from core.llm_schemas import StoryResponseLLM
 from core.prompts import STORY_PROMPT
 from exceptions.exceptions import InsufficientCreditsError, StoryResponseValidationError
 

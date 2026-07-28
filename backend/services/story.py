@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlmodel import Session, select
 
-from core.models import StoryNodeLLM, StoryResponseLLM
+from core.llm_schemas import StoryNodeLLM, StoryResponseLLM
 from core.story_generator import generate_story_response
 from db.database import engine
 from exceptions.exceptions import (
