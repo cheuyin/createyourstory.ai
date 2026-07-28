@@ -1,6 +1,6 @@
 import requests
-import os
 
+from core.config import settings
 from exceptions.exceptions import ImageGenerationException
 
 
@@ -23,7 +23,7 @@ class ImageGenerator:
         }
         
         HEADERS = {
-            "Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}",
+            "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
             "Content-Type": "application/json",
         }
         try:
