@@ -9,6 +9,8 @@ interface ImageLoaderProps {
 }
 
 function ImageLoader({ story }: ImageLoaderProps) {
+  const hasImageOnStory = Boolean(story.image_base_64);
+
   const imagePoll = useQuery({
     queryKey: ["image_poll", story.image_job_id],
     queryFn: async () => {
@@ -21,6 +23,8 @@ function ImageLoader({ story }: ImageLoaderProps) {
       }
       return data;
     },
+    enabled: !hasImageOnStory && Boolean(story.image_job_id),
+    retry: false,
     refetchInterval: (query) => {
       if (query.state.error) return false;
       const imageJob: ImageJobPublic | undefined = query.state.data;
@@ -29,7 +33,6 @@ function ImageLoader({ story }: ImageLoaderProps) {
       }
       return 3000;
     },
-    enabled: true,
   });
 
   const isImageJobCompleted =
@@ -45,10 +48,31 @@ function ImageLoader({ story }: ImageLoaderProps) {
       }
       return data;
     },
-    enabled: isImageJobCompleted,
+    enabled: !hasImageOnStory && Boolean(isImageJobCompleted),
+    retry: false,
   });
 
-  if (!imagePoll.error && !isImageJobCompleted) {
+  if (hasImageOnStory) {
+    return (
+      <img
+        src={`data:image/jpeg;base64,${story.image_base_64}`}
+        alt="Story cover illustration"
+        className="mt-5 aspect-[2/3] w-full rounded-xl object-cover shadow-lg"
+      />
+    );
+  }
+
+  if (!story.image_job_id) {
+    return (
+      <ErrorAlert
+        className="mt-5"
+        title="Couldn’t generate the illustration"
+        message="No illustration is available for this story."
+      />
+    );
+  }
+
+  if (imagePoll.isPending) {
     return (
       <div className="mt-5 flex aspect-[2/3] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/40 px-6 dark:border-gray-600 dark:bg-gray-800/40">
         <Spinner size="lg" color="warning" aria-label="Generating image" />
@@ -72,6 +96,20 @@ function ImageLoader({ story }: ImageLoaderProps) {
     );
   }
 
+  if (!isImageJobCompleted) {
+    return (
+      <div className="mt-5 flex aspect-[2/3] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/40 px-6 dark:border-gray-600 dark:bg-gray-800/40">
+        <Spinner size="lg" color="warning" aria-label="Generating image" />
+        <p className="mt-4 font-medium text-gray-700 dark:text-gray-200">
+          Illustrating your story…
+        </p>
+        <p className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
+          The image usually takes a few seconds to paint.
+        </p>
+      </div>
+    );
+  }
+
   if (imageQuery.isPending) {
     return (
       <div className="mt-5 flex aspect-[2/3] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/40 px-6 dark:border-gray-600 dark:bg-gray-800/40">
@@ -83,12 +121,15 @@ function ImageLoader({ story }: ImageLoaderProps) {
     );
   }
 
-  if (imageQuery.error) {
+  if (imageQuery.error || !imageQuery.data?.image_base_64) {
     return (
       <ErrorAlert
         className="mt-5"
         title="Couldn’t load the illustration"
-        message={imageQuery.error.message}
+        message={
+          imageQuery.error?.message ??
+          "The illustration finished generating but no image was found."
+        }
       />
     );
   }
