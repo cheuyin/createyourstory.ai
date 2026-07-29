@@ -12,5 +12,6 @@ When implementing or refactoring:
 3. **Verify after each chunk** — Run relevant tests, lint, or smoke checks before proceeding.
 4. **Commit boundaries** — Treat each chunk as commit-ready, but only create commits when the user asks (or at an explicit checkpoint they approve).
 5. **Report progress** — After each chunk, briefly state what changed, verification result, and the next chunk.
+6. **After the user commits** — Introduce the next chunk in a concise paragraph (what it does, what files it touches, how to verify). Also give a concise overview of the remaining chunks in the plan as a clean table so the user always sees what's left.
 
 A chunk is too big if it needs "and also" in the summary or cannot be verified independently.
