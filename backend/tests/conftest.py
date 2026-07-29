@@ -19,11 +19,12 @@ import os
 # file or fail because JWT_SECRET_KEY is missing. Setting these env vars
 # first keeps tests isolated and predictable.
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
-os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-tests-only")
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-tests-only-32b")
 os.environ.setdefault("OPENROUTER_API_KEY", "test-key-not-used-in-tests")
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
 from core.llm_schemas import StoryNodeLLM, StoryResponseLLM
@@ -38,15 +39,15 @@ from services import auth as auth_service
 # A "fixture" is reusable test setup that pytest injects into test functions.
 # This one creates a fresh in-memory SQLite database for each test that needs it.
 #
-# ":memory:" means the database lives only in RAM and disappears when the
-# connection closes — perfect for fast, isolated tests.
+# ":memory:" means the database lives only in RAM. SQLite gives each connection
+# its own empty :memory: DB by default — StaticPool forces one shared connection
+# so tables we create here are visible to every request in the test.
 @pytest.fixture
 def engine():
-    # SQLite normally allows only one thread per connection. FastAPI's
-    # TestClient can use multiple threads, so we relax that rule here.
     test_engine = create_engine(
-        "sqlite:///:memory:",
+        "sqlite://",
         connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
 
     # Create all tables (user, story, storynode, storyjob, imagejob, etc.)
