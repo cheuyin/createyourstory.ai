@@ -3,6 +3,8 @@ import requests
 from core.config import settings
 from exceptions.exceptions import ImageGenerationException
 
+IMAGE_MODEL = "x-ai/grok-imagine-image-quality"
+
 
 class ImageGenerator:
     @classmethod
@@ -14,7 +16,7 @@ class ImageGenerator:
         """
         URL = "https://openrouter.ai/api/v1/images"
         BODY = {
-            "model": "x-ai/grok-imagine-image-quality",
+            "model": IMAGE_MODEL,
             "prompt": prompt,
             "aspect_ratio": "2:3",
             "resolution": "1K",
@@ -27,8 +29,14 @@ class ImageGenerator:
         }
         try:
             response = requests.post(URL, json=BODY, headers=HEADERS)
-            response.raise_for_status()
+            if not response.ok:
+                body = response.text[:2000]
+                raise ImageGenerationException(
+                    message=f"OpenRouter {response.status_code}: {body}"
+                )
             data = response.json()
             return data["data"][0]["b64_json"]
+        except ImageGenerationException:
+            raise
         except Exception as e:
             raise ImageGenerationException(message=str(e))

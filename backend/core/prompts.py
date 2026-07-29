@@ -64,15 +64,29 @@ Output only the completed story, strictly following the required story format.
 """
 
 
+MAX_IMAGE_PROMPT_BYTES = 7999
+_TRANSCRIPT_TRUNCATION_MARKER = "\n[transcript truncated]"
+
+
+def _prompt_byte_length(prompt: str) -> int:
+    return len(prompt.encode("utf-8"))
+
+
+def _truncate_utf8(text: str, max_bytes: int) -> str:
+    if max_bytes <= 0:
+        return ""
+    return text.encode("utf-8")[:max_bytes].decode("utf-8", errors="ignore")
+
+
 def generate_story_image_prompt(story: Story) -> str:
-    story_transcript = ""
-    for node in story.nodes:
-        story_transcript += node.content + "\n"
-    PROMPT = f"""
+    story_transcript = "".join(node.content + "\n" for node in story.nodes)
+
+    def build_prompt(transcript: str) -> str:
+        return f"""
 You are given the complete transcript of a choose-your-own-adventure story.
 
 <transcript>
-{story_transcript}
+{transcript}
 </transcript>
 
 Your task is to generate ONE image depicting a single moment that actually occurs within the story.
@@ -97,4 +111,26 @@ If the story is clearly set in a stylized fictional universe (for example, anime
 
 Depict only a single moment. Do not include text, logos, borders, captions, or titles.
 """
-    return PROMPT
+
+    prompt = build_prompt(story_transcript)
+    if _prompt_byte_length(prompt) <= MAX_IMAGE_PROMPT_BYTES:
+        return prompt
+
+    wrapper_bytes = _prompt_byte_length(build_prompt(""))
+    transcript_budget_bytes = MAX_IMAGE_PROMPT_BYTES - wrapper_bytes
+    if transcript_budget_bytes <= 0:
+        return _truncate_utf8(build_prompt(""), MAX_IMAGE_PROMPT_BYTES)
+
+    marker_bytes = _prompt_byte_length(_TRANSCRIPT_TRUNCATION_MARKER)
+    if marker_bytes < transcript_budget_bytes:
+        truncated_transcript = (
+            _truncate_utf8(story_transcript, transcript_budget_bytes - marker_bytes)
+            + _TRANSCRIPT_TRUNCATION_MARKER
+        )
+    else:
+        truncated_transcript = _truncate_utf8(story_transcript, transcript_budget_bytes)
+
+    truncated_prompt = build_prompt(truncated_transcript)
+    if _prompt_byte_length(truncated_prompt) > MAX_IMAGE_PROMPT_BYTES:
+        return _truncate_utf8(truncated_prompt, MAX_IMAGE_PROMPT_BYTES)
+    return truncated_prompt
