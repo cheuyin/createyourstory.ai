@@ -64,15 +64,19 @@ Output only the completed story, strictly following the required story format.
 """
 
 
+MAX_IMAGE_PROMPT_LENGTH = 7999
+_TRANSCRIPT_TRUNCATION_MARKER = "\n[transcript truncated]"
+
+
 def generate_story_image_prompt(story: Story) -> str:
-    story_transcript = ""
-    for node in story.nodes:
-        story_transcript += node.content + "\n"
-    PROMPT = f"""
+    story_transcript = "".join(node.content + "\n" for node in story.nodes)
+
+    def build_prompt(transcript: str) -> str:
+        return f"""
 You are given the complete transcript of a choose-your-own-adventure story.
 
 <transcript>
-{story_transcript}
+{transcript}
 </transcript>
 
 Your task is to generate ONE image depicting a single moment that actually occurs within the story.
@@ -97,4 +101,21 @@ If the story is clearly set in a stylized fictional universe (for example, anime
 
 Depict only a single moment. Do not include text, logos, borders, captions, or titles.
 """
-    return PROMPT
+
+    prompt = build_prompt(story_transcript)
+    if len(prompt) <= MAX_IMAGE_PROMPT_LENGTH:
+        return prompt
+
+    transcript_budget = MAX_IMAGE_PROMPT_LENGTH - len(build_prompt(""))
+    if transcript_budget <= 0:
+        return build_prompt("")[:MAX_IMAGE_PROMPT_LENGTH]
+
+    if len(_TRANSCRIPT_TRUNCATION_MARKER) < transcript_budget:
+        truncated_transcript = (
+            story_transcript[: transcript_budget - len(_TRANSCRIPT_TRUNCATION_MARKER)]
+            + _TRANSCRIPT_TRUNCATION_MARKER
+        )
+    else:
+        truncated_transcript = story_transcript[:transcript_budget]
+
+    return build_prompt(truncated_transcript)[:MAX_IMAGE_PROMPT_LENGTH]
