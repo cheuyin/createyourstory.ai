@@ -26,8 +26,11 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 
+from core.llm_schemas import StoryNodeLLM, StoryResponseLLM
 from db.database import get_db
 from main import app
+from models.auth import User, UserCreate
+from services import auth as auth_service
 
 # ---------------------------------------------------------------------------
 # Fixture: engine
@@ -87,3 +90,106 @@ def client(db_session):
 
     # Always undo the override so later tests are not affected.
     app.dependency_overrides.clear()
+
+
+# ---------------------------------------------------------------------------
+# Fixture: sample_llm_response
+# ---------------------------------------------------------------------------
+# A fake "AI output" we can use instead of calling OpenRouter.
+# Shape matches StoryResponseLLM — a tiny decision tree:
+#   root (id 0) → two endings (id 1 loses, id 2 wins).
+# Persistence and flow tests will reuse this so we never hit the real API.
+@pytest.fixture
+def sample_llm_response() -> StoryResponseLLM:
+    return StoryResponseLLM(
+        title="The Fork in the Road",
+        rootNodeId=0,
+        allNodes={
+            0: StoryNodeLLM(
+                id=0,
+                optionText=None,
+                options=[1, 2],
+                content="You stand at a crossroads.",
+                isWinningEnding=False,
+            ),
+            1: StoryNodeLLM(
+                id=1,
+                optionText="Go left",
+                options=[],
+                content="A wolf appears. You lose.",
+                isWinningEnding=False,
+            ),
+            2: StoryNodeLLM(
+                id=2,
+                optionText="Go right",
+                options=[],
+                content="You find treasure. You win.",
+                isWinningEnding=True,
+            ),
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# Helper: create_user
+# ---------------------------------------------------------------------------
+# Not a fixture — call this when a test needs a User row in the database
+# without going through HTTP (e.g. story ownership tests in later chunks).
+def create_user(
+    db_session: Session,
+    *,
+    username: str,
+    password: str = "secret123",
+    full_name: str | None = None,
+) -> User:
+    auth_service.signup_user(
+        db_session,
+        UserCreate(
+            username=username,
+            full_name=full_name or username.title(),
+            password=password,
+        ),
+    )
+    user = auth_service.get_user_by_username(db_session, username)
+    assert user is not None
+    return user
+
+
+# ---------------------------------------------------------------------------
+# Fixture: auth_headers
+# ---------------------------------------------------------------------------
+# Signs up "alice" via the API and returns headers you pass to authenticated
+# requests: {"Authorization": "Bearer <token>"}.
+@pytest.fixture
+def auth_headers(client) -> dict[str, str]:
+    response = client.post(
+        "/api/auth/signup",
+        json={
+            "username": "alice",
+            "full_name": "Alice",
+            "password": "secret123",
+        },
+    )
+    assert response.status_code == 201
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+# ---------------------------------------------------------------------------
+# Fixture: second_user_headers
+# ---------------------------------------------------------------------------
+# Same as auth_headers but for a second user ("bob"). Used when we need to
+# prove user A cannot access user B's stories (authorization matrix tests).
+@pytest.fixture
+def second_user_headers(client) -> dict[str, str]:
+    response = client.post(
+        "/api/auth/signup",
+        json={
+            "username": "bob",
+            "full_name": "Bob",
+            "password": "secret123",
+        },
+    )
+    assert response.status_code == 201
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
