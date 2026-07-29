@@ -118,6 +118,8 @@ Install the Python dependencies:
 uv sync --project backend
 ```
 
+To run backend tests, see [backend/README.md](backend/README.md).
+
 Start the API:
 
 ```bash
