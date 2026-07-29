@@ -19,5 +19,15 @@ dependencies = [
     "uvicorn>=0.49.0",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
 [tool.fastapi]
 entrypoint = "main:app"
