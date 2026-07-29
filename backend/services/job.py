@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlmodel import Session, select
 
-from core.image_generator import ImageGenerator
+from core.image_generator import IMAGE_MODEL, ImageGenerator
 from core.prompts import generate_story_image_prompt
 from db.database import engine
 from exceptions.exceptions import (
@@ -15,8 +15,6 @@ from exceptions.exceptions import (
 from models.auth import User
 from models.job import ImageJob, ImageJobPublic, StoryJob, StoryJobPublic
 from models.story import Story
-
-IMAGE_MODEL = "gemini-3.1-flash-image"
 
 
 def create_image_job_for_story_job(db: Session, job: StoryJob) -> str:
