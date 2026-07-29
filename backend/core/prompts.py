@@ -64,8 +64,18 @@ Output only the completed story, strictly following the required story format.
 """
 
 
-MAX_IMAGE_PROMPT_LENGTH = 7999
+MAX_IMAGE_PROMPT_BYTES = 7999
 _TRANSCRIPT_TRUNCATION_MARKER = "\n[transcript truncated]"
+
+
+def _prompt_byte_length(prompt: str) -> int:
+    return len(prompt.encode("utf-8"))
+
+
+def _truncate_utf8(text: str, max_bytes: int) -> str:
+    if max_bytes <= 0:
+        return ""
+    return text.encode("utf-8")[:max_bytes].decode("utf-8", errors="ignore")
 
 
 def generate_story_image_prompt(story: Story) -> str:
@@ -103,19 +113,24 @@ Depict only a single moment. Do not include text, logos, borders, captions, or t
 """
 
     prompt = build_prompt(story_transcript)
-    if len(prompt) <= MAX_IMAGE_PROMPT_LENGTH:
+    if _prompt_byte_length(prompt) <= MAX_IMAGE_PROMPT_BYTES:
         return prompt
 
-    transcript_budget = MAX_IMAGE_PROMPT_LENGTH - len(build_prompt(""))
-    if transcript_budget <= 0:
-        return build_prompt("")[:MAX_IMAGE_PROMPT_LENGTH]
+    wrapper_bytes = _prompt_byte_length(build_prompt(""))
+    transcript_budget_bytes = MAX_IMAGE_PROMPT_BYTES - wrapper_bytes
+    if transcript_budget_bytes <= 0:
+        return _truncate_utf8(build_prompt(""), MAX_IMAGE_PROMPT_BYTES)
 
-    if len(_TRANSCRIPT_TRUNCATION_MARKER) < transcript_budget:
+    marker_bytes = _prompt_byte_length(_TRANSCRIPT_TRUNCATION_MARKER)
+    if marker_bytes < transcript_budget_bytes:
         truncated_transcript = (
-            story_transcript[: transcript_budget - len(_TRANSCRIPT_TRUNCATION_MARKER)]
+            _truncate_utf8(story_transcript, transcript_budget_bytes - marker_bytes)
             + _TRANSCRIPT_TRUNCATION_MARKER
         )
     else:
-        truncated_transcript = story_transcript[:transcript_budget]
+        truncated_transcript = _truncate_utf8(story_transcript, transcript_budget_bytes)
 
-    return build_prompt(truncated_transcript)[:MAX_IMAGE_PROMPT_LENGTH]
+    truncated_prompt = build_prompt(truncated_transcript)
+    if _prompt_byte_length(truncated_prompt) > MAX_IMAGE_PROMPT_BYTES:
+        return _truncate_utf8(truncated_prompt, MAX_IMAGE_PROMPT_BYTES)
+    return truncated_prompt
