@@ -8,10 +8,7 @@ from dependencies.auth import get_user_from_token
 from models.auth import Token, User, UserCreate, UserPublic
 from services import auth as auth_service
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["auth"]
-)
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=Token)
@@ -29,5 +26,4 @@ async def signup(data: UserCreate, db: SessionDep):
 
 @router.get("/users/me", response_model=UserPublic)
 def read_users_me(current_user: Annotated[User, Depends(get_user_from_token)]):
-    return UserPublic(
-        username=current_user.username, full_name=current_user.full_name)
+    return UserPublic(username=current_user.username, full_name=current_user.full_name)

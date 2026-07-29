@@ -1,0 +1,49 @@
+---
+description: Conventional commit message format
+alwaysApply: false
+---
+
+# Commit style
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) for all commit messages.
+
+## Format
+
+```
+<type>(<scope>): <summary>
+
+[optional body]
+```
+
+- **Summary:** imperative mood, ≤72 characters, no trailing period
+- **Body:** only when the *why* is not obvious from the summary
+
+## Types
+
+| Type | Use for |
+|------|---------|
+| `feat` | New behavior or capability |
+| `fix` | Bug fix |
+| `refactor` | Behavior-preserving restructure |
+| `test` | Tests only |
+| `chore` | Tooling, deps, rename-only moves |
+| `docs` | Documentation only |
+
+## Scopes
+
+Use a short module name when it helps: `story`, `image`, `job`, `auth`, `api`, `core`. Omit scope when the change spans many areas or scope adds no clarity.
+
+## Examples
+
+```
+test(api): add error contract tests for 404 and validation
+fix(image): pass OpenRouter API key from settings
+refactor(story): split LLM generation from persistence
+chore(core): rename models.py to llm_schemas.py
+```
+
+## Avoid
+
+- Vague summaries: `fix stuff`, `updates`, `WIP`
+- Past tense: `added`, `fixed`, `updated`
+- Mixing unrelated changes in one commit

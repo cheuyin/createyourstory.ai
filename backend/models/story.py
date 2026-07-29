@@ -1,11 +1,11 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlmodel import Column, SQLModel, Field, Relationship, Text
-from datetime import datetime
+from sqlmodel import Column, Field, Relationship, SQLModel, Text
 
 if TYPE_CHECKING:
-    from models.job import ImageJob
     from models.auth import User
+    from models.job import ImageJob
 
 
 class Story(SQLModel, table=True):
@@ -13,26 +13,24 @@ class Story(SQLModel, table=True):
     title: str = Field(index=True)
     session_id: str = Field(index=True)
     ai_model: str
-    nodes: list["StoryNode"] = Relationship(
-        back_populates="story", cascade_delete=True)
+    nodes: list["StoryNode"] = Relationship(back_populates="story", cascade_delete=True)
     # ===== Stats =====
     num_endings: int | None = Field(default=None)
     num_winning_endings: int | None = Field(default=None)
     num_words: int | None = Field(default=None)
     image_base_64: str | None = Field(default=None, sa_column=Column(Text))
     # ==== User =====
-    user_id: int | None = Field(foreign_key="user.id",
-                                index=True, ondelete="CASCADE", nullable=True)
+    user_id: int | None = Field(
+        foreign_key="user.id", index=True, ondelete="CASCADE", nullable=True
+    )
     user: "User" = Relationship(back_populates="stories")
     image_job: "ImageJob" = Relationship(back_populates="story")
-    created_at: datetime = Field(
-        default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=datetime.now)
 
 
 class StoryNode(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
-    story_id: int = Field(foreign_key="story.id",
-                          index=True, ondelete="CASCADE")
+    story_id: int = Field(foreign_key="story.id", index=True, ondelete="CASCADE")
     content: str
     is_root: bool = False
     is_ending: bool = False

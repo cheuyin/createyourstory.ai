@@ -1,7 +1,7 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlmodel import Relationship, SQLModel, Field
-from datetime import datetime
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from models.story import Story
@@ -17,10 +17,8 @@ class StoryJob(SQLModel, table=True):
     story_id: int | None = None
     error: str | None = None
     image_job_id: str | None = None
-    user_id: int | None = Field(foreign_key="user.id",
-                                index=True, nullable=True)
-    created_at: datetime = Field(
-        default_factory=datetime.now)
+    user_id: int | None = Field(foreign_key="user.id", index=True, nullable=True)
+    created_at: datetime = Field(default_factory=datetime.now)
     completed_at: datetime | None = None
 
 
@@ -42,14 +40,11 @@ class ImageJob(SQLModel, table=True):
     theme: str
     status: str
     image_model: str
-    story_id: int = Field(foreign_key="story.id",
-                          index=True, ondelete="CASCADE")
+    story_id: int = Field(foreign_key="story.id", index=True, ondelete="CASCADE")
     story: "Story" = Relationship(back_populates="image_job")
     error: str | None = None
-    user_id: int | None = Field(foreign_key="user.id",
-                                index=True, nullable=True)
-    created_at: datetime = Field(
-        default_factory=datetime.now)
+    user_id: int | None = Field(foreign_key="user.id", index=True, nullable=True)
+    created_at: datetime = Field(default_factory=datetime.now)
     completed_at: datetime | None = None
 
 
@@ -61,6 +56,5 @@ class ImageJobPublic(SQLModel):
     story_id: int | None = None
     error: str | None = None
     username: str | None
-    created_at: datetime = Field(
-        default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=datetime.now)
     completed_at: datetime | None = None

@@ -1,6 +1,5 @@
 from models.story import Story
 
-
 STORY_PROMPT = """
 <role>
 You are an expert game designer and short story writer specializing in engaging, meaningful Choose-Your-Adventure stories.

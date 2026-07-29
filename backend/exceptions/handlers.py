@@ -24,8 +24,7 @@ _DOMAIN_EXCEPTION_STATUS: list[
 ] = [
     (ImageGenerationException, status.HTTP_503_SERVICE_UNAVAILABLE, None),
     (InsufficientCreditsError, status.HTTP_402_PAYMENT_REQUIRED, None),
-    (AuthenticationError, status.HTTP_401_UNAUTHORIZED,
-     {"WWW-Authenticate": "Bearer"}),
+    (AuthenticationError, status.HTTP_401_UNAUTHORIZED, {"WWW-Authenticate": "Bearer"}),
     (AuthorizationError, status.HTTP_403_FORBIDDEN, None),
     (UnsupportedAIModelError, status.HTTP_400_BAD_REQUEST, None),
     (StoryGenerationError, status.HTTP_500_INTERNAL_SERVER_ERROR, None),
@@ -61,8 +60,7 @@ def _make_domain_handler(
 
 def register_exception_handlers(app: FastAPI) -> None:
     for exc_class, status_code, headers in _DOMAIN_EXCEPTION_STATUS:
-        app.add_exception_handler(
-            exc_class, _make_domain_handler(status_code, headers))
+        app.add_exception_handler(exc_class, _make_domain_handler(status_code, headers))
 
     app.add_exception_handler(
         CreateYourStoryError,

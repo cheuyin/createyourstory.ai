@@ -5,7 +5,6 @@ from exceptions.exceptions import ImageGenerationException
 
 
 class ImageGenerator:
-
     @classmethod
     def generate_image(cls, prompt: str) -> str:
         """
@@ -21,7 +20,7 @@ class ImageGenerator:
             "resolution": "1K",
             "output_format": "jpeg",
         }
-        
+
         HEADERS = {
             "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
             "Content-Type": "application/json",
