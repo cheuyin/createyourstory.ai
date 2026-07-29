@@ -1,18 +1,16 @@
-from typing import Annotated
 import uuid
-from fastapi import APIRouter, Depends, Cookie, Response, BackgroundTasks, status
+from typing import Annotated
 
-from dependencies.auth import get_user_from_token, get_optional_user_from_token
-from models.auth import User
-from models.story import StoryCreate, CompleteStoryPublic
-from models.job import StoryJobPublic
+from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, Response, status
+
 from db.database import SessionDep
+from dependencies.auth import get_optional_user_from_token, get_user_from_token
+from models.auth import User
+from models.job import StoryJobPublic
+from models.story import CompleteStoryPublic, StoryCreate
 from services import story as story_service
 
-router = APIRouter(
-    prefix="/stories",
-    tags=["stories"]
-)
+router = APIRouter(prefix="/stories", tags=["stories"])
 
 
 def get_session_id(session_id: str | None = Cookie(None)):
@@ -32,21 +30,30 @@ def create_story(
 ):
     response.set_cookie(key="session_id", value=session_id, httponly=True)
     job_public, job_db_id = story_service.create_story_job(
-        db, request, user, session_id)
+        db, request, user, session_id
+    )
     background_tasks.add_task(story_service.run_story_generation, job_db_id)
     return job_public
 
 
 @router.delete("/{story_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_story(story_id: int, db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]):
+def delete_story(
+    story_id: int, db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]
+):
     story_service.delete_story(db, story_id, user)
 
 
 @router.get("/{story_id}", response_model=CompleteStoryPublic)
-def get_complete_story(story_id: int, db: SessionDep, user: Annotated[User | None, Depends(get_optional_user_from_token)]):
+def get_complete_story(
+    story_id: int,
+    db: SessionDep,
+    user: Annotated[User | None, Depends(get_optional_user_from_token)],
+):
     return story_service.get_story(db, story_id, user)
 
 
 @router.get("", response_model=list[CompleteStoryPublic])
-def get_all_stories(db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]):
+def get_all_stories(
+    db: SessionDep, user: Annotated[User, Depends(get_user_from_token)]
+):
     return story_service.list_stories(db, user)

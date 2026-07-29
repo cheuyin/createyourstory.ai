@@ -13,10 +13,12 @@ From this directory:
 
 ```bash
 uv sync --group dev
+uv run ruff check .
+uv run ruff format --check .
 uv run pytest -v
 ```
 
-`--group dev` installs pytest, pytest-mock, and httpx2 (for FastAPI’s `TestClient`).
+`ruff format .` (without `--check`) auto-formats files. `--group dev` installs pytest, pytest-mock, httpx2, and ruff.
 
 ### What the suite does
 

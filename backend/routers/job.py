@@ -4,10 +4,7 @@ from db.database import SessionDep
 from models.job import ImageJobPublic, StoryJobPublic
 from services import job as job_service
 
-router = APIRouter(
-    prefix="/jobs",
-    tags=["jobs"]
-)
+router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 
 @router.get("/stories/{job_id}", response_model=StoryJobPublic)

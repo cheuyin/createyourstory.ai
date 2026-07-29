@@ -33,6 +33,7 @@ from main import app
 from models.auth import User, UserCreate
 from services import auth as auth_service
 
+
 # ---------------------------------------------------------------------------
 # Fixture: engine
 # ---------------------------------------------------------------------------

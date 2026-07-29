@@ -1,7 +1,11 @@
 class CreateYourStoryError(Exception):
     """base exception class"""
 
-    def __init__(self, message: str = "Service is unavailable", name: str = "CreateYourStoryError.ai Error"):
+    def __init__(
+        self,
+        message: str = "Service is unavailable",
+        name: str = "CreateYourStoryError.ai Error",
+    ):
         self.message = message
         self.name = name
         super().__init__(self.message, self.name)
@@ -10,35 +14,53 @@ class CreateYourStoryError(Exception):
 class ImageGenerationException(CreateYourStoryError):
     """something went wrong during image generation"""
 
-    def __init__(self, message: str = "Something went wrong during image generation", name: str = "Image generation failed"):
+    def __init__(
+        self,
+        message: str = "Something went wrong during image generation",
+        name: str = "Image generation failed",
+    ):
         super().__init__(message, name)
 
 
 class InsufficientCreditsError(CreateYourStoryError):
     """user has run out of AI credits and cannot perform the action"""
 
-    def __init__(self, message: str = "Insufficient AI credits", name: str = "AI credits exhausted"):
+    def __init__(
+        self,
+        message: str = "Insufficient AI credits",
+        name: str = "AI credits exhausted",
+    ):
         super().__init__(message, name)
 
 
 class AuthenticationError(CreateYourStoryError):
     """user is not authenticated and cannot perform the action"""
 
-    def __init__(self, message: str = "Authentication required", name: str = "Not authenticated"):
+    def __init__(
+        self, message: str = "Authentication required", name: str = "Not authenticated"
+    ):
         super().__init__(message, name)
 
 
 class AuthorizationError(CreateYourStoryError):
     """user is authenticated but not authorized to perform the action"""
 
-    def __init__(self, message: str = "User is not authorized to do this", name: str = "Not authorized"):
+    def __init__(
+        self,
+        message: str = "User is not authorized to do this",
+        name: str = "Not authorized",
+    ):
         super().__init__(message, name)
 
 
 class UnsupportedAIModelError(CreateYourStoryError):
     """selected AI model isn't supported"""
 
-    def __init__(self, message: str = "Please choose a different model", name: str = "Model not supported"):
+    def __init__(
+        self,
+        message: str = "Please choose a different model",
+        name: str = "Model not supported",
+    ):
         super().__init__(message, name)
 
 
@@ -59,19 +81,29 @@ class StoryNotFoundError(CreateYourStoryError):
 class StoryRootNotFoundError(CreateYourStoryError):
     """story root not found (each story must have a root node)"""
 
-    def __init__(self, message: str = "Story root node not found", name: str = "Not found"):
+    def __init__(
+        self, message: str = "Story root node not found", name: str = "Not found"
+    ):
         super().__init__(message, name)
 
 
 class StoryResponseValidationError(CreateYourStoryError):
     """LLM model's response doesn't match the schema"""
 
-    def __init__(self, message: str = "AI response is incorrectly formatted", name: str = "Validation failed"):
+    def __init__(
+        self,
+        message: str = "AI response is incorrectly formatted",
+        name: str = "Validation failed",
+    ):
         super().__init__(message, name)
 
 
 class StoryGenerationError(CreateYourStoryError):
     """LLM was unable to generate the story"""
 
-    def __init__(self, message: str = "An error prevented the story from being generated", name: str = "Story generation failed"):
+    def __init__(
+        self,
+        message: str = "An error prevented the story from being generated",
+        name: str = "Story generation failed",
+    ):
         super().__init__(message, name)

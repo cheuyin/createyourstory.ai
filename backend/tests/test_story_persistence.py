@@ -8,10 +8,11 @@ correctly, and that a bad LLM-shaped graph rolls back without leaving rows.
 import json
 
 import pytest
+from sqlmodel import select
+
 from core.llm_schemas import StoryNodeLLM, StoryResponseLLM
 from models.story import Story, StoryNode
 from services.story import persist_story_from_llm
-from sqlmodel import select
 
 AI_MODEL = "google/gemini-2.5-flash"
 

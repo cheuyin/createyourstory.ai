@@ -42,7 +42,8 @@ def get_story_job_status(db: Session, job_id: str) -> StoryJobPublic:
         raise JobNotFoundError()
     if job.status == "failed":
         raise StoryGenerationError(
-            message=job.error or "Error occured during story generation")
+            message=job.error or "Error occured during story generation"
+        )
 
     user = db.get(User, job.user_id) if job.user_id else None
 
@@ -66,7 +67,8 @@ def get_image_job_status(db: Session, job_id: str) -> ImageJobPublic:
         raise JobNotFoundError(message="Image job not found")
     if job.status == "failed":
         raise ImageGenerationException(
-            message=job.error or "Something went wrong during image generation")
+            message=job.error or "Something went wrong during image generation"
+        )
     user = db.get(User, job.user_id) if job.user_id else None
     return ImageJobPublic(
         job_id=job_id,
@@ -86,8 +88,7 @@ def run_image_generation(job_id: str) -> None:
         statement = select(ImageJob).where(ImageJob.job_id == job_id)
         image_job = db.exec(statement).first()
         if not image_job:
-            raise JobNotFoundError(
-                message=f"Image job with ID {job_id} not found")
+            raise JobNotFoundError(message=f"Image job with ID {job_id} not found")
         story = db.get(Story, image_job.story_id)
         if not story:
             raise StoryNotFoundError()

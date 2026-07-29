@@ -15,7 +15,6 @@ from exceptions.exceptions import (
 )
 from models.auth import User
 from models.job import StoryJob, StoryJobPublic
-from services import job as job_service
 from models.story import (
     CompleteStoryNodePublic,
     CompleteStoryPublic,
@@ -24,6 +23,7 @@ from models.story import (
     StoryNode,
     StoryOption,
 )
+from services import job as job_service
 
 VALID_AI_MODELS = [
     "google/gemini-3.5-flash",
@@ -47,8 +47,10 @@ def build_complete_story_tree(db: Session, story: Story) -> CompleteStoryPublic:
             content=node.content,
             is_ending=node.is_ending,
             is_winning_ending=node.is_winning_ending,
-            options=json.loads(
-                node.options_raw_json_str) if node.options_raw_json_str else [])
+            options=json.loads(node.options_raw_json_str)
+            if node.options_raw_json_str
+            else [],
+        )
         node_map[node.id] = node_response
     root_node = next((node for node in nodes if node.is_root), None)
     if not root_node:
@@ -104,10 +106,12 @@ def get_story(db: Session, story_id: int, user: User | None) -> CompleteStoryPub
     if story.user_id is not None:
         if not user:
             raise AuthorizationError(
-                message="You cannot view other users' stories as a guest")
+                message="You cannot view other users' stories as a guest"
+            )
         if story.user_id != user.id:
             raise AuthorizationError(
-                message="You are not authorized to view this story")
+                message="You are not authorized to view this story"
+            )
     return build_complete_story_tree(db, story)
 
 
@@ -119,8 +123,7 @@ def list_stories(db: Session, user: User) -> list[CompleteStoryPublic]:
 def delete_story(db: Session, story_id: int, user: User) -> None:
     story = _get_story_by_id(db, story_id)
     if story.user_id != user.id:
-        raise AuthorizationError(
-            message="You cannot delete stories you did not create")
+        raise AuthorizationError(message="You cannot delete stories you did not create")
     db.delete(story)
     db.commit()
 
@@ -148,11 +151,16 @@ def _process_story_node(
         for option_id in curr_node.options:
             StoryNodeLLM.model_validate(story.allNodes[option_id])
             added_child = _process_story_node(
-                db, story_id, story, story.allNodes[option_id].id, False)
-            options_raw_json_str_list.append(StoryOption(**{
-                "text": story.allNodes[option_id].optionText,
-                "node_id": added_child.id,
-            }).model_dump(mode="json"))
+                db, story_id, story, story.allNodes[option_id].id, False
+            )
+            options_raw_json_str_list.append(
+                StoryOption(
+                    **{
+                        "text": story.allNodes[option_id].optionText,
+                        "node_id": added_child.id,
+                    }
+                ).model_dump(mode="json")
+            )
         node.options_raw_json_str = json.dumps(options_raw_json_str_list)
 
     db.flush()
@@ -178,8 +186,7 @@ def persist_story_from_llm(
         db.flush()
         assert story.id
 
-        _process_story_node(
-            db, story.id, response, response.rootNodeId, is_root=True)
+        _process_story_node(db, story.id, response, response.rootNodeId, is_root=True)
 
         db.commit()
         return story

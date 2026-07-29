@@ -8,9 +8,10 @@ run_story_generation opens its own Session(db.database.engine), so we patch that
 engine to the in-memory test engine — otherwise the job row would not be found.
 """
 
+from sqlmodel import select
+
 from models.job import StoryJob
 from services.story import run_story_generation
-from sqlmodel import select
 
 AI_MODEL = "google/gemini-2.5-flash"
 THEME = "A hero stands at a crossroads in a dark forest."
@@ -42,9 +43,7 @@ def test_create_story_flow_with_mocked_ai(
     assert create_response.status_code == 200
     job_id = create_response.json()["job_id"]
 
-    job_row = db_session.exec(
-        select(StoryJob).where(StoryJob.job_id == job_id)
-    ).first()
+    job_row = db_session.exec(select(StoryJob).where(StoryJob.job_id == job_id)).first()
     assert job_row is not None
     assert job_row.id is not None
 
