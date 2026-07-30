@@ -1,7 +1,10 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from pydantic import field_serializer
 from sqlmodel import Field, Relationship, SQLModel
+
+from core.datetime_utils import utc_aware, utc_now
 
 if TYPE_CHECKING:
     from models.story import Story
@@ -18,7 +21,7 @@ class StoryJob(SQLModel, table=True):
     error: str | None = None
     image_job_id: str | None = None
     user_id: int | None = Field(foreign_key="user.id", index=True, nullable=True)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utc_now)
     completed_at: datetime | None = None
 
 
@@ -33,6 +36,10 @@ class StoryJobPublic(SQLModel):
     completed_at: datetime | None
     error: str | None
 
+    @field_serializer("created_at", "completed_at")
+    def serialize_datetimes(self, value: datetime | None) -> datetime | None:
+        return utc_aware(value) if value is not None else None
+
 
 class ImageJob(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
@@ -44,7 +51,7 @@ class ImageJob(SQLModel, table=True):
     story: "Story" = Relationship(back_populates="image_job")
     error: str | None = None
     user_id: int | None = Field(foreign_key="user.id", index=True, nullable=True)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utc_now)
     completed_at: datetime | None = None
 
 
@@ -56,5 +63,9 @@ class ImageJobPublic(SQLModel):
     story_id: int | None = None
     error: str | None = None
     username: str | None
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime
     completed_at: datetime | None = None
+
+    @field_serializer("created_at", "completed_at")
+    def serialize_datetimes(self, value: datetime | None) -> datetime | None:
+        return utc_aware(value) if value is not None else None

@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime
 
 from sqlmodel import Session, select
 
+from core.datetime_utils import utc_now
 from core.image_generator import IMAGE_MODEL, ImageGenerator
 from core.prompts import generate_story_image_prompt
 from db.database import engine
@@ -96,14 +96,14 @@ def run_image_generation(job_id: str) -> None:
             story.image_base_64 = image_data
             story.image_job = image_job
             image_job.status = "completed"
-            image_job.completed_at = datetime.now()
+            image_job.completed_at = utc_now()
         except ImageGenerationException as e:
             image_job.status = "failed"
             image_job.error = e.message
-            image_job.completed_at = datetime.now()
+            image_job.completed_at = utc_now()
         except Exception as e:
             image_job.status = "failed"
             image_job.error = str(e)
-            image_job.completed_at = datetime.now()
+            image_job.completed_at = utc_now()
 
         db.commit()

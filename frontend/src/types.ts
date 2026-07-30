@@ -17,7 +17,7 @@ export interface CompleteStoryPublic {
   ai_model: string;
   username: string;
   session_id: string | null;
-  created_at: Date;
+  created_at: string;
   root_node: CompleteStoryNodePublic;
   all_nodes: Record<number, CompleteStoryNodePublic>;
   num_endings: number;
@@ -32,10 +32,10 @@ export interface StoryJobPublic {
   username: string;
   status: string;
   ai_model: string;
-  created_at: Date;
+  created_at: string;
   story_id: number | null;
   image_job_id: string | null;
-  completed_at: Date | null;
+  completed_at: string | null;
   error: string | null;
 }
 
@@ -62,6 +62,6 @@ export interface ImageJobPublic {
   story_id: number | null;
   error: string | null;
   username: string | null;
-  created_at: Date;
-  completed_at: Date | null;
+  created_at: string;
+  completed_at: string | null;
 }

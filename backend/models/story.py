@@ -1,7 +1,10 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from pydantic import field_serializer
 from sqlmodel import Column, Field, Relationship, SQLModel, Text
+
+from core.datetime_utils import utc_aware, utc_now
 
 if TYPE_CHECKING:
     from models.auth import User
@@ -25,7 +28,7 @@ class Story(SQLModel, table=True):
     )
     user: "User" = Relationship(back_populates="stories")
     image_job: "ImageJob" = Relationship(back_populates="story")
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=utc_now)
 
 
 class StoryNode(SQLModel, table=True):
@@ -72,3 +75,7 @@ class CompleteStoryPublic(SQLModel):
     num_words: int
     image_job_id: str | None
     image_base_64: str | None
+
+    @field_serializer("created_at")
+    def serialize_created_at(self, value: datetime) -> datetime:
+        return utc_aware(value)

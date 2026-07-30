@@ -1,9 +1,9 @@
 import json
 import uuid
-from datetime import datetime
 
 from sqlmodel import Session, select
 
+from core.datetime_utils import utc_now
 from core.llm_schemas import StoryNodeLLM, StoryResponseLLM
 from core.story_generator import generate_story_response
 from db.database import engine
@@ -255,12 +255,12 @@ def run_story_generation(job_id: int) -> None:
             generate_story_stats(story)
             image_job_id = job_service.create_image_job_for_story_job(db, job)
             job.status = "completed"
-            job.completed_at = datetime.now()
+            job.completed_at = utc_now()
             db.commit()
         except Exception as e:
             if job:
                 job.status = "failed"
-                job.completed_at = datetime.now()
+                job.completed_at = utc_now()
                 job.error = str(e)
                 db.commit()
 
