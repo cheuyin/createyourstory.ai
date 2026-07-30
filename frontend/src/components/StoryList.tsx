@@ -5,9 +5,14 @@ import { Card, Spinner } from "flowbite-react";
 import { useNavigate } from "react-router";
 import ErrorAlert from "./ErrorAlert";
 
-function formatRelativeDate(value: string | Date): string {
+function formatRelativeDate(value: string): string {
   const date = new Date(value);
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (Number.isNaN(date.getTime())) return "unknown";
+
+  const seconds = Math.max(
+    0,
+    Math.floor((Date.now() - date.getTime()) / 1000),
+  );
   if (seconds < 60) return "just now";
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
