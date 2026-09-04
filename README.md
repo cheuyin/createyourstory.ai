@@ -44,7 +44,7 @@ React + TypeScript
 FastAPI REST API ── background jobs ── language/image models
         │
         ▼
-SQLModel + SQLite
+SQLModel + PostgreSQL
 ```
 
 ## Engineering highlights
@@ -60,33 +60,34 @@ SQLModel + SQLite
 
 **Frontend**
 
-- React 19 and TypeScript
-- Vite
-- React Router
-- TanStack Query for server state and polling
-- Flowbite React and Tailwind CSS
+- The frontend is built with React 19 and TypeScript.
+- Vite powers local development and static asset bundling.
+- Client routing is handled by React Router.
+- TanStack Query manages server state and asynchronous polling.
+- The UI styling is built with Flowbite React and Tailwind CSS.
 
 **Backend**
 
-- Python 3.13+
-- FastAPI and Uvicorn
-- SQLModel / SQLAlchemy
-- SQLite by default
-- LangChain with OpenRouter for text and image generation
+- The backend runs on Python 3.13 or newer.
+- The web framework is FastAPI with Uvicorn.
+- Data access is modeled with SQLModel and SQLAlchemy.
+- PostgreSQL provides persistent storage for all runtime environments.
+- LangChain coordinates with OpenRouter for text and image generation.
 
 **Authentication**
 
-- JWT access tokens
-- Argon2 password hashing via `pwdlib`
+- User authorization is secured with JWT access tokens.
+- Password hashing is implemented with Argon2 via `pwdlib`.
 
 ## Local development
 
 ### Prerequisites
 
-- Node.js and npm
-- Python 3.13 or newer
-- [`uv`](https://docs.astral.sh/uv/)
-- An [OpenRouter](https://openrouter.ai/) API key
+- Node.js and npm must be installed on your machine.
+- Python 3.13 or newer is required.
+- The project requires `uv` for managing Python dependencies.
+- You need an OpenRouter API key for story generation.
+- A Supabase PostgreSQL database is required for persistent data storage.
 
 ### 1. Configure the backend
 
@@ -96,12 +97,12 @@ Copy the backend environment template and add your API key:
 cp backend/.env.example backend/.env
 ```
 
-The template contains the local defaults:
+The template contains the default development settings:
 
 ```env
 API_PREFIX=/api
 DEBUG=false
-DATABASE_URL=sqlite:///./database.db
+DATABASE_URL=postgresql://postgres.[project-ref]:[db-password]@aws-0-[region].pooler.supabase.com:6543/postgres
 OPENROUTER_API_KEY=your_openrouter_api_key
 JWT_SECRET_KEY=replace_with_a_long_random_secret
 ```
@@ -164,7 +165,7 @@ The repository includes a build script that installs frontend dependencies, buil
 - Background work currently uses FastAPI background tasks rather than a dedicated job queue.
 - Story editing and regeneration are not implemented yet.
 - Model selection and generation costs need additional controls for a larger deployment.
-- SQLite is convenient for local development, but a production deployment would need an intentional persistence and database strategy.
+- Schema versioning with Alembic can be introduced to manage automated migrations across environments.
 
 ## License
 

@@ -4,8 +4,18 @@ FastAPI REST API for story generation, jobs, and auth. See the [root README](../
 
 ## Prerequisites
 
-- Python 3.13 or newer
-- [`uv`](https://docs.astral.sh/uv/)
+- You need Python 3.13 or newer installed locally.
+- The project uses `uv` for package and virtual environment management.
+- You need a Supabase connection string to connect to the PostgreSQL database.
+
+## Database Configuration
+
+The application uses PostgreSQL as its primary database.
+
+- Both local development and production deployments connect to Supabase PostgreSQL using the transaction pooler URI.
+- The database engine automatically enables connection pre-pinging and recycles stale connections.
+- Missing tables are created automatically on application startup.
+- Automated tests continue to use an in-memory SQLite database for speed and isolation.
 
 ## Running tests
 
@@ -18,14 +28,14 @@ uv run ruff format --check .
 uv run pytest -v
 ```
 
-`ruff format .` (without `--check`) auto-formats files. `--group dev` installs pytest, pytest-mock, httpx2, and ruff.
+Running `ruff format .` without `--check` automatically formats python files. The `--group dev` flag installs pytest, pytest-mock, httpx2, and ruff.
 
 ### What the suite does
 
-- **13 tests** under `tests/` — auth, error contracts, story authorization, persistence, and one end-to-end create flow.
-- **In-memory SQLite** — each test gets a fresh database (`conftest.py`); your local `database.db` is not touched.
-- **Mocked AI** — OpenRouter is never called. `generate_story_response` and `ImageGenerator.generate_image` are patched in tests that need them.
-- **No `.env` required for tests** — `conftest.py` sets safe defaults (`DATABASE_URL`, `JWT_SECRET_KEY`, `OPENROUTER_API_KEY`) before the app loads.
+- The test suite covers authentication, database persistence, error contracts, and story flows.
+- Tests run against an isolated in-memory SQLite database so they never touch your live data.
+- Language model and image generation APIs are mocked to prevent external network calls.
+- In-memory database settings are injected before the application loads so no `.env` file is required for testing.
 
 ### CI
 
