@@ -1,6 +1,6 @@
 ---
 description: Conventional commit message format
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Commit style

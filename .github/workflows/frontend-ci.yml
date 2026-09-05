@@ -2,9 +2,6 @@ name: Frontend CI
 
 on:
   pull_request:
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-ci.yml"
 
 jobs:
   lint-and-build:
